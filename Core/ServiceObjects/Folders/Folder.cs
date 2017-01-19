@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="Folder.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the Folder class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -648,12 +663,33 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Gets the name of the well known folder.
+        /// Gets the well known name of this folder, if any, as a string.
         /// </summary>
-        /// <value>The name of the well known folder.</value>
+        /// <value>The well known name of this folder as a string, or null if this folder isn't a well known folder.</value>
+        public string WellKnownFolderNameAsString
+        {
+            get { return (string)this.PropertyBag[FolderSchema.WellKnownFolderName]; }
+        }
+
+        /// <summary>
+        /// Gets the well known name of this folder, if any.
+        /// </summary>
+        /// <value>The well known name of this folder, or null if this folder isn't a well known folder.</value>
         public WellKnownFolderName? WellKnownFolderName
         {
-            get { return (WellKnownFolderName?)this.PropertyBag[FolderSchema.WellKnownFolderName]; }
+            get
+            {
+                WellKnownFolderName result;
+
+                if (EwsUtilities.TryParse<WellKnownFolderName>(this.WellKnownFolderNameAsString, out result))
+                {
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         #endregion

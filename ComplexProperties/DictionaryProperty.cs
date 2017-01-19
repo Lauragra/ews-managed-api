@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="DictionaryProperty.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the DictionaryProperty class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -20,7 +35,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// <typeparam name="TKey">The type of key.</typeparam>
     /// <typeparam name="TEntry">The type of entry.</typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public abstract class DictionaryProperty<TKey, TEntry> : ComplexProperty, ICustomUpdateSerializer, IJsonCollectionDeserializer
+    public abstract class DictionaryProperty<TKey, TEntry> : ComplexProperty, ICustomUpdateSerializer
         where TEntry : DictionaryEntryProperty<TKey>
     {
         private Dictionary<TKey, TEntry> entries = new Dictionary<TKey, TEntry>();
@@ -54,22 +69,6 @@ namespace Microsoft.Exchange.WebServices.Data
             writer.WriteAttributeValue(XmlAttributeNames.FieldURI, this.GetFieldURI());
             writer.WriteAttributeValue(XmlAttributeNames.FieldIndex, this.GetFieldIndex(key));
             writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Writes the URI to json.
-        /// </summary>
-        /// <param name="key">The key.</param>
-        /// <returns></returns>
-        private JsonObject WriteUriToJson(TKey key)
-        {
-            JsonObject jsonUri = new JsonObject();
-
-            jsonUri.AddTypeParameter(JsonNames.PathToIndexedFieldType);
-            jsonUri.Add(XmlAttributeNames.FieldURI, this.GetFieldURI());
-            jsonUri.Add(XmlAttributeNames.FieldIndex, this.GetFieldIndex(key));
-
-            return jsonUri;
         }
 
         /// <summary>
@@ -203,6 +202,7 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             this.addedEntries.Remove(key);
+            this.modifiedEntries.Remove(key);
         }
 
         /// <summary>
@@ -240,36 +240,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json collection.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        void IJsonCollectionDeserializer.CreateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            foreach (object collectionEntry in jsonCollection)
-            {
-                JsonObject jsonEntry = collectionEntry as JsonObject;
-
-                if (jsonEntry != null)
-                {
-                    TEntry entry = this.CreateEntryInstance();
-                    entry.LoadFromJson(jsonEntry, service);
-                    this.InternalAdd(entry);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads from json collection to update the existing collection element.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        void IJsonCollectionDeserializer.UpdateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Writes to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -300,25 +270,6 @@ namespace Microsoft.Exchange.WebServices.Data
             {
                 keyValuePair.Value.WriteToXml(writer, this.GetEntryXmlElementName(keyValuePair.Value));
             }
-        }
-
-        /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            List<object> jsonArray = new List<object>();
-
-            foreach (KeyValuePair<TKey, TEntry> keyValuePair in this.entries)
-            {
-                jsonArray.Add(keyValuePair.Value.InternalToJson(service));
-            }
-
-            return jsonArray.ToArray();
         }
 
         /// <summary>
@@ -403,86 +354,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Writes the set update to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="propertyDefinition">The property definition.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns></returns>
-        bool ICustomUpdateSerializer.WriteSetUpdateToJson(
-             ExchangeService service,
-             ServiceObject ewsObject,
-             PropertyDefinition propertyDefinition,
-             List<JsonObject> updates)
-        {
-            List<TEntry> tempEntries = new List<TEntry>();
-
-            foreach (TKey key in this.addedEntries)
-            {
-                tempEntries.Add(this.entries[key]);
-            }
-            foreach (TKey key in this.modifiedEntries)
-            {
-                tempEntries.Add(this.entries[key]);
-            }
-
-            foreach (TEntry entry in tempEntries)
-            {
-                if (!entry.WriteSetUpdateToJson(
-                    service,
-                    ewsObject,
-                    propertyDefinition,
-                    updates))
-                {
-                    JsonObject jsonUpdate = new JsonObject();
-
-                    jsonUpdate.AddTypeParameter(ewsObject.GetSetFieldXmlElementName());
-
-                    JsonObject jsonUri = new JsonObject();
-
-                    jsonUri.AddTypeParameter(JsonNames.PathToIndexedFieldType);
-                    jsonUri.Add(XmlAttributeNames.FieldURI, this.GetFieldURI());
-                    jsonUri.Add(XmlAttributeNames.FieldIndex, entry.Key.ToString());
-
-                    jsonUpdate.Add(JsonNames.Path, jsonUri);
-
-                    object jsonProperty = entry.InternalToJson(service);
-
-                    JsonObject jsonServiceObject = new JsonObject();
-                    jsonServiceObject.AddTypeParameter(ewsObject.GetXmlElementName());
-                    jsonServiceObject.Add(propertyDefinition.XmlElementName, new object[] { jsonProperty });
-
-                    jsonUpdate.Add(PropertyBag.GetPropertyUpdateItemName(ewsObject), jsonServiceObject);
-
-                    updates.Add(jsonUpdate);
-                }
-            }
-
-            foreach (TEntry entry in this.removedEntries.Values)
-            {
-                if (!entry.WriteDeleteUpdateToJson(service, ewsObject, updates))
-                {
-                    JsonObject jsonUpdate = new JsonObject();
-
-                    jsonUpdate.AddTypeParameter(ewsObject.GetDeleteFieldXmlElementName());
-
-                    JsonObject jsonUri = new JsonObject();
-
-                    jsonUri.AddTypeParameter(JsonNames.PathToIndexedFieldType);
-                    jsonUri.Add(XmlAttributeNames.FieldURI, this.GetFieldURI());
-                    jsonUri.Add(XmlAttributeNames.FieldIndex, entry.Key.ToString());
-
-                    jsonUpdate.Add(JsonNames.Path, jsonUri);
-
-                    updates.Add(jsonUpdate);
-                }
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Writes deletion update to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -491,18 +362,6 @@ namespace Microsoft.Exchange.WebServices.Data
         /// True if property generated serialization.
         /// </returns>
         bool ICustomUpdateSerializer.WriteDeleteUpdateToXml(EwsServiceXmlWriter writer, ServiceObject ewsObject)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Writes the delete update to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns></returns>
-        bool ICustomUpdateSerializer.WriteDeleteUpdateToJson(ExchangeService service, ServiceObject ewsObject, List<JsonObject> updates)
         {
             return false;
         }

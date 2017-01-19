@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="UserConfigurationDictionary.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Implements a UserConfiguration's Dictionary property.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -23,7 +38,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// Represents a user configuration's Dictionary property.
     /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public sealed class UserConfigurationDictionary : ComplexProperty, IEnumerable, IJsonCollectionDeserializer
+    public sealed class UserConfigurationDictionary : ComplexProperty, IEnumerable
     {
         // TODO: Consider implementing IsDirty mechanism in ComplexProperty.
         private Dictionary<object, object> dictionary;
@@ -205,30 +220,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service"></param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            List<object> jsonArray = new List<object>();
-
-            foreach (KeyValuePair<object, object> dictionaryEntry in this.dictionary)
-            {
-                JsonObject jsonDictionaryEntry = new JsonObject();
-
-                jsonDictionaryEntry.Add(XmlElementNames.DictionaryKey, this.GetJsonObject(dictionaryEntry.Key, service));
-                jsonDictionaryEntry.Add(XmlElementNames.DictionaryValue, this.GetJsonObject(dictionaryEntry.Value, service));
-
-                jsonArray.Add(jsonDictionaryEntry);
-            }
-
-            return jsonArray.ToArray();
-        }
-
-        /// <summary>
         /// Gets the type code.
         /// </summary>
         /// <param name="service">The service.</param>
@@ -289,46 +280,6 @@ namespace Microsoft.Exchange.WebServices.Data
         private static UserConfigurationDictionaryObjectType GetObjectType(string type)
         {
             return (UserConfigurationDictionaryObjectType)Enum.Parse(typeof(UserConfigurationDictionaryObjectType), type, false);
-        }
-
-        /// <summary>
-        /// Gets the json object.
-        /// </summary>
-        /// <param name="dictionaryObject">The dictionary object.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        private JsonObject GetJsonObject(object dictionaryObject, ExchangeService service)
-        {                
-            UserConfigurationDictionaryObjectType dictionaryObjectType = UserConfigurationDictionaryObjectType.String;
-            string[] valueAsStringArray = null;
-
-            if (dictionaryObject == null)
-            {
-                return null;
-            }
-
-            if (dictionaryObject is string[])
-            {
-                dictionaryObjectType = UserConfigurationDictionaryObjectType.StringArray;
-                valueAsStringArray = dictionaryObject as string[];
-            }
-            else if (dictionaryObject is byte[])
-            {
-                dictionaryObjectType = UserConfigurationDictionaryObjectType.ByteArray;
-                valueAsStringArray = new string[] { Convert.ToBase64String(dictionaryObject as byte[]) };
-            }
-            else
-            {
-                valueAsStringArray = new string[1];
-                GetTypeCode(service, dictionaryObject, ref dictionaryObjectType, ref valueAsStringArray[0]);
-            }
-            
-            JsonObject jsonDictionaryObject = new JsonObject();
-
-            jsonDictionaryObject.Add(XmlElementNames.Type, dictionaryObjectType);
-            jsonDictionaryObject.Add(XmlElementNames.Value, valueAsStringArray);
-
-            return jsonDictionaryObject;
         }
 
         /// <summary>
@@ -526,54 +477,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             this.dictionary.Add(key, value);
-        }
-
-        /// <summary>
-        /// Loads from json collection.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        public void CreateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            foreach (object element in jsonCollection)
-            {
-                JsonObject jsonEntry = element as JsonObject;
-
-                object parsedKey = this.GetDictionaryObject(jsonEntry.ReadAsJsonObject(XmlElementNames.DictionaryKey), service);
-                object parsedValue = this.GetDictionaryObject(jsonEntry.ReadAsJsonObject(XmlElementNames.DictionaryValue), service);
-
-                this.dictionary.Add(parsedKey, parsedValue);
-            }
-        }
-
-        /// <summary>
-        /// Loads from json collection to update.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        public void UpdateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Gets the dictionary object.
-        /// </summary>
-        /// <param name="jsonObject">The json object.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        private object GetDictionaryObject(JsonObject jsonObject, ExchangeService service)
-        {
-            if (jsonObject == null)
-            {
-                return null;
-            }
-
-            UserConfigurationDictionaryObjectType type = GetObjectType(jsonObject.ReadAsString(XmlElementNames.Type));
-
-            List<string> values = this.GetObjectValue(jsonObject.ReadAsArray(XmlElementNames.Value));
-
-            return this.ConstructObject(type, values, service);
         }
 
         /// <summary>

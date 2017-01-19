@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="TimeZoneTransitionGroup.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the TimeZoneTransitionGroup class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -50,39 +65,6 @@ namespace Microsoft.Exchange.WebServices.Data
         internal override void ReadAttributesFromXml(EwsServiceXmlReader reader)
         {
             this.id = reader.ReadAttributeValue(XmlAttributeNames.Id);
-        }
-
-        /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service">The service.</param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            base.LoadFromJson(jsonProperty, service);
-
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlAttributeNames.Id:
-                        this.id = jsonProperty.ReadAsString(key);
-                        break;
-
-                    case XmlElementNames.Transition:
-
-                        foreach (object uncastJsonTransition in jsonProperty.ReadAsArray(key))
-                        {
-                            JsonObject jsonTransition = uncastJsonTransition as JsonObject;
-                            TimeZoneTransition transition = TimeZoneTransition.Create(this.timeZoneDefinition, jsonTransition.ReadTypeString());
-
-                            transition.LoadFromJson(jsonTransition, service);
-
-                            this.transitions.Add(transition);
-                        }
-                        break;
-                }
-            }
         }
 
         /// <summary>
@@ -130,30 +112,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonTimeZoneTransitionGroup = new JsonObject();
-
-            jsonTimeZoneTransitionGroup.Add(XmlAttributeNames.Id, this.id);
-
-            List<object> jsonTransitions = new List<object>();
-            foreach (TimeZoneTransition transition in this.transitions)
-            {
-                jsonTransitions.Add(transition.InternalToJson(service));
-            }
-
-            jsonTimeZoneTransitionGroup.Add(XmlElementNames.Transitions, jsonTransitions.ToArray());
-
-            return jsonTimeZoneTransitionGroup;
-        }
-
-        /// <summary>
         /// Initializes this transition group based on the specified asjustment rule.
         /// </summary>
         /// <param name="adjustmentRule">The adjustment rule to initialize from.</param>
@@ -177,9 +135,18 @@ namespace Microsoft.Exchange.WebServices.Data
                 daylightPeriod,
                 adjustmentRule.DaylightTransitionStart);
 
+            TimeZonePeriod standardPeriodToSet = new TimeZonePeriod();
+            standardPeriodToSet.Id = string.Format(
+                "{0}/{1}",
+                standardPeriod.Id,
+                adjustmentRule.DateStart.Year);
+            standardPeriodToSet.Name = standardPeriod.Name;
+            standardPeriodToSet.Bias = standardPeriod.Bias;
+            this.timeZoneDefinition.Periods.Add(standardPeriodToSet.Id, standardPeriodToSet);
+
             this.transitionToStandard = TimeZoneTransition.CreateTimeZoneTransition(
                 this.timeZoneDefinition,
-                standardPeriod,
+                standardPeriodToSet,
                 adjustmentRule.DaylightTransitionEnd);
 
             this.transitions.Add(this.transitionToDaylight);

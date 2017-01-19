@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="SyncResponse.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the SyncResponse class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -154,85 +169,6 @@ namespace Microsoft.Exchange.WebServices.Data
                     }
                 }
                 while (!reader.IsEndElement(XmlNamespace.Messages, XmlElementNames.Changes));
-            }
-        }
-
-        /// <summary>
-        /// Reads response elements from Json.
-        /// </summary>
-        /// <param name="responseObject">The response object.</param>
-        /// <param name="service">The service.</param>
-        internal override void ReadElementsFromJson(JsonObject responseObject, ExchangeService service)
-        {
-            this.Changes.SyncState = responseObject.ReadAsString(XmlElementNames.SyncState);
-            this.Changes.MoreChangesAvailable = !responseObject.ReadAsBool(this.GetIncludesLastInRangeXmlElementName());
-
-            JsonObject changesElement = responseObject.ReadAsJsonObject(XmlElementNames.Changes);
-
-            foreach (object changeElement in changesElement.ReadAsArray(XmlElementNames.Changes))
-            {
-                JsonObject jsonChange = changeElement as JsonObject;
-
-                TChange change = this.CreateChangeInstance();
-
-                string changeType = jsonChange.ReadAsString(XmlElementNames.ChangeType);
-
-                switch (changeType)
-                {
-                    case XmlElementNames.Create:
-                        change.ChangeType = ChangeType.Create;
-                        break;
-                    case XmlElementNames.Update:
-                        change.ChangeType = ChangeType.Update;
-                        break;
-                    case XmlElementNames.Delete:
-                        change.ChangeType = ChangeType.Delete;
-                        break;
-                    case XmlElementNames.ReadFlagChange:
-                        change.ChangeType = ChangeType.ReadFlagChange;
-                        break;
-                    default:
-                        break;
-                }
-
-                if (change != null)
-                {
-                    switch (change.ChangeType)
-                    {
-                        case ChangeType.Delete:
-                        case ChangeType.ReadFlagChange:
-                            change.Id = change.CreateId();
-                            JsonObject jsonChangeId = jsonChange.ReadAsJsonObject(this.GetChangeIdElementName());
-                            change.Id.LoadFromJson(jsonChangeId, service);
-
-                            if (change.ChangeType == ChangeType.ReadFlagChange)
-                            {
-                                ItemChange itemChange = change as ItemChange;
-
-                                EwsUtilities.Assert(
-                                    itemChange != null,
-                                    "SyncResponse.ReadElementsFromJson",
-                                    "ReadFlagChange is only valid on ItemChange");
-
-                                itemChange.IsRead = jsonChange.ReadAsBool(XmlElementNames.IsRead);
-                            }
-
-                            break;
-                        default:
-                            JsonObject jsonServiceObject = jsonChange.ReadAsJsonObject(this.GetChangeElementName());
-                            change.ServiceObject = EwsUtilities.CreateEwsObjectFromXmlElementName<TServiceObject>(service, jsonServiceObject.ReadTypeString());
-
-                            change.ServiceObject.LoadFromJson(
-                                                    jsonServiceObject,
-                                                    service,
-                                                    true, /* clearPropertyBag */
-                                                    this.propertySet,
-                                                    this.SummaryPropertiesOnly);
-                            break;
-                    }
-
-                    this.changes.Add(change);
-                }
             }
         }
 

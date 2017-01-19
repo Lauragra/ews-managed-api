@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="FolderPermission.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the FolderPermission class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -640,57 +655,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service"></param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlElementNames.UserId:
-                        this.UserId = new UserId();
-                        this.UserId.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.CanCreateItems:
-                        this.canCreateItems = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.CanCreateSubFolders:
-                        this.canCreateSubFolders = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.IsFolderOwner:
-                        this.isFolderOwner = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.IsFolderVisible:
-                        this.isFolderVisible = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.IsFolderContact:
-                        this.isFolderContact = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.EditItems:
-                        this.editItems = jsonProperty.ReadEnumValue<PermissionScope>(key);
-                        break;
-                    case XmlElementNames.DeleteItems:
-                        this.deleteItems = jsonProperty.ReadEnumValue<PermissionScope>(key);
-                        break;
-                    case XmlElementNames.ReadItems:
-                        this.readItems = jsonProperty.ReadEnumValue<FolderPermissionReadAccess>(key);
-                        break;
-                    case XmlElementNames.PermissionLevel:
-                    case XmlElementNames.CalendarPermissionLevel:
-                        this.permissionLevel = jsonProperty.ReadEnumValue<FolderPermissionLevel>(key);
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            this.AdjustPermissionLevel();
-        }
-
-        /// <summary>
         /// Writes elements to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -766,65 +730,6 @@ namespace Microsoft.Exchange.WebServices.Data
             this.WriteAttributesToXml(writer);
             this.WriteElementsToXml(writer, isCalendarFolder);
             writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="isCalendarFolder">if set to <c>true</c> [is calendar folder].</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal object InternalToJson(ExchangeService service, bool isCalendarFolder)
-        {
-            JsonObject jsonPermission = new JsonObject();
-
-            jsonPermission.Add(XmlElementNames.UserId, this.UserId.InternalToJson(service));
-
-            if (this.PermissionLevel == FolderPermissionLevel.Custom)
-            {
-                jsonPermission.Add(
-                    XmlElementNames.CanCreateItems,
-                    this.CanCreateItems);
-
-                jsonPermission.Add(
-                    XmlElementNames.CanCreateSubFolders,
-                    this.CanCreateSubFolders);
-
-                jsonPermission.Add(
-                    XmlElementNames.IsFolderOwner,
-                    this.IsFolderOwner);
-
-                jsonPermission.Add(
-                    XmlElementNames.IsFolderVisible,
-                    this.IsFolderVisible);
-
-                jsonPermission.Add(
-                    XmlElementNames.IsFolderContact,
-                    this.IsFolderContact);
-
-                jsonPermission.Add(
-                    XmlElementNames.EditItems,
-                    this.EditItems);
-
-                jsonPermission.Add(
-                    XmlElementNames.DeleteItems,
-                    this.DeleteItems);
-
-                jsonPermission.Add(
-                    XmlElementNames.ReadItems,
-                    this.ReadItems);
-            }
-
-            jsonPermission.Add(
-                isCalendarFolder ? XmlElementNames.CalendarPermissionLevel : XmlElementNames.PermissionLevel,
-                this.PermissionLevel);
-
-            jsonPermission.AddTypeParameter(
-                isCalendarFolder ? XmlElementNames.CalendarPermission : XmlElementNames.Permission);
-
-            return jsonPermission;
         }
     }
 }

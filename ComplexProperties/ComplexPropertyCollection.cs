@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="ComplexPropertyCollection.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ComplexPropertyCollection class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -20,7 +35,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// </summary>
     /// <typeparam name="TComplexProperty">ComplexProperty type.</typeparam>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public abstract class ComplexPropertyCollection<TComplexProperty> : ComplexProperty, IEnumerable<TComplexProperty>, ICustomUpdateSerializer, IJsonCollectionDeserializer
+    public abstract class ComplexPropertyCollection<TComplexProperty> : ComplexProperty, IEnumerable<TComplexProperty>, ICustomUpdateSerializer
         where TComplexProperty : ComplexProperty
     {
         private List<TComplexProperty> items = new List<TComplexProperty>();
@@ -34,12 +49,6 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="xmlElementName">Name of the XML element.</param>
         /// <returns>Complex property instance.</returns>
         internal abstract TComplexProperty CreateComplexProperty(string xmlElementName);
-
-        /// <summary>
-        /// Creates the default complex property.
-        /// </summary>
-        /// <returns>Complex property instance.</returns>
-        internal abstract TComplexProperty CreateDefaultComplexProperty();
 
         /// <summary>
         /// Gets the name of the collection item XML element.
@@ -168,88 +177,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        void IJsonCollectionDeserializer.CreateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            foreach (object jsonObject in jsonCollection)
-            {
-                JsonObject jsonProperty = jsonObject as JsonObject;
-
-                if (jsonProperty != null)
-                {
-                    TComplexProperty complexProperty = null;
-
-                    // If type property is present, use it. Otherwise create default property instance.
-                    // Note: polymorphic collections (such as Attachments) need a type property so
-                    // the CreateDefaultComplexProperty call will fail.
-                    if (jsonProperty.HasTypeProperty())
-                    {
-                        complexProperty = this.CreateComplexProperty(jsonProperty.ReadTypeString());
-                    }
-                    else
-                    {
-                        complexProperty = this.CreateDefaultComplexProperty();
-                    }
-
-                    if (complexProperty != null)
-                    {
-                        complexProperty.LoadFromJson(jsonProperty, service);
-                        this.InternalAdd(complexProperty, true);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads from json to update existing property.
-        /// </summary>
-        /// <param name="jsonCollection">The json collection.</param>
-        /// <param name="service">The service.</param>
-        void IJsonCollectionDeserializer.UpdateFromJsonCollection(object[] jsonCollection, ExchangeService service)
-        {
-            if (this.Count != jsonCollection.Length)
-            {
-                throw new ServiceLocalException(Strings.PropertyCollectionSizeMismatch);
-            }
-
-            int index = 0;
-            foreach (object jsonObject in jsonCollection)
-            {
-                JsonObject jsonProperty = jsonObject as JsonObject;
-
-                if (jsonProperty != null)
-                {
-                    TComplexProperty expectedComplexProperty = null;
-
-                    if (jsonProperty.HasTypeProperty())
-                    {
-                        expectedComplexProperty = this.CreateComplexProperty(jsonProperty.ReadTypeString());
-                    }
-                    else
-                    {
-                        expectedComplexProperty = this.CreateDefaultComplexProperty();
-                    }
-
-                    TComplexProperty actualComplexProperty = this[index++];
-
-                    if (expectedComplexProperty == null || !expectedComplexProperty.GetType().IsInstanceOfType(actualComplexProperty))
-                    {
-                        throw new ServiceLocalException(Strings.PropertyTypeIncompatibleWhenUpdatingCollection);
-                    }
-
-                    actualComplexProperty.LoadFromJson(jsonProperty, service);
-                }
-                else
-                {
-                    throw new ServiceLocalException();
-                }
-            }
-        }
-
-        /// <summary>
         /// Writes to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -267,25 +194,6 @@ namespace Microsoft.Exchange.WebServices.Data
                     xmlNamespace,
                     xmlElementName);
             }
-        }
-
-        /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service"></param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            List<object> jsonPropertyCollection = new List<object>();
-
-            foreach (TComplexProperty complexProperty in this)
-            {
-                jsonPropertyCollection.Add(complexProperty.InternalToJson(service));
-            }
-
-            return jsonPropertyCollection.ToArray();
         }
 
         /// <summary>
@@ -571,50 +479,6 @@ namespace Microsoft.Exchange.WebServices.Data
         bool ICustomUpdateSerializer.WriteDeleteUpdateToXml(EwsServiceXmlWriter writer, ServiceObject ewsObject)
         {
             // Use the default XML serializer.
-            return false;
-        }
-
-        /// <summary>
-        /// Writes the update to Json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="propertyDefinition">Property definition.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns>
-        /// True if property generated serialization.
-        /// </returns>
-        bool ICustomUpdateSerializer.WriteSetUpdateToJson(ExchangeService service, ServiceObject ewsObject, PropertyDefinition propertyDefinition, List<JsonObject> updates)
-        {
-            // If the collection is empty, delete the property.
-            if (this.Count == 0)
-            {
-                JsonObject jsonUpdate = new JsonObject();
-
-                jsonUpdate.AddTypeParameter(ewsObject.GetDeleteFieldXmlElementName());
-                jsonUpdate.Add(JsonNames.Path, (propertyDefinition as IJsonSerializable).ToJson(service));
-                return true;
-            }
-
-            // Otherwise, use the default Json serializer.
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Writes the deletion update to Json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns>
-        /// True if property generated serialization.
-        /// </returns>
-        bool ICustomUpdateSerializer.WriteDeleteUpdateToJson(ExchangeService service, ServiceObject ewsObject, List<JsonObject> updates)
-        {
-            // Use the default Json serializer.
             return false;
         }
 

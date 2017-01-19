@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="EwsUtilities.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the EwsUtilities class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -46,15 +61,24 @@ namespace Microsoft.Exchange.WebServices.Data
         private static LazyMember<string> buildVersion = new LazyMember<string>(
             delegate()
             {
-                FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
-                return fileInfo.FileVersion;
+                try
+                {
+                    FileVersionInfo fileInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+                    return fileInfo.FileVersion;
+                }
+                catch
+                {
+                    // OM:2026839 When run in an environment with partial trust, fetching the build version blows up.
+                    // Just return a hardcoded value on failure.
+                    return "0.0";
+                }
             });
 
         /// <summary>
         /// Dictionary of enum type to ExchangeVersion maps. 
         /// </summary>
         private static LazyMember<Dictionary<Type, Dictionary<Enum, ExchangeVersion>>> enumVersionDictionaries = new LazyMember<Dictionary<Type, Dictionary<Enum, ExchangeVersion>>>(
-            () => new Dictionary<Type, Dictionary<Enum, ExchangeVersion>>() 
+            () => new Dictionary<Type, Dictionary<Enum, ExchangeVersion>>()
             {
                 { typeof(WellKnownFolderName), BuildEnumDict(typeof(WellKnownFolderName)) },
                 { typeof(ItemTraversal), BuildEnumDict(typeof(ItemTraversal)) },
@@ -69,7 +93,7 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Dictionary of enum type to schema-name-to-enum-value maps.
         /// </summary>
         private static LazyMember<Dictionary<Type, Dictionary<string, Enum>>> schemaToEnumDictionaries = new LazyMember<Dictionary<Type, Dictionary<string, Enum>>>(
-            () => new Dictionary<Type, Dictionary<string, Enum>> 
+            () => new Dictionary<Type, Dictionary<string, Enum>>
             {
                 { typeof(EventType), BuildSchemaToEnumDict(typeof(EventType)) },
                 { typeof(MailboxType), BuildSchemaToEnumDict(typeof(MailboxType)) },
@@ -82,7 +106,7 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Dictionary of enum type to enum-value-to-schema-name maps.
         /// </summary>
         private static LazyMember<Dictionary<Type, Dictionary<Enum, string>>> enumToSchemaDictionaries = new LazyMember<Dictionary<Type, Dictionary<Enum, string>>>(
-            () => new Dictionary<Type, Dictionary<Enum, string>> 
+            () => new Dictionary<Type, Dictionary<Enum, string>>
             {
                 { typeof(EventType), BuildEnumToSchemaDict(typeof(EventType)) },
                 { typeof(MailboxType), BuildEnumToSchemaDict(typeof(MailboxType)) },
@@ -95,7 +119,7 @@ namespace Microsoft.Exchange.WebServices.Data
         /// Dictionary to map from special CLR type names to their "short" names.
         /// </summary>
         private static LazyMember<Dictionary<string, string>> typeNameToShortNameMap = new LazyMember<Dictionary<string, string>>(
-            () => new Dictionary<string, string> 
+            () => new Dictionary<string, string>
             {
                 { "Boolean", "bool" },
                 { "Int16", "short" },
@@ -637,6 +661,11 @@ namespace Microsoft.Exchange.WebServices.Data
                 "EwsUtilities.ParseEnumValueList",
                 "T is not an enum type.");
 
+            if (string.IsNullOrEmpty(value))
+            {
+                return;
+            }
+
             string[] enumValues = value.Split(separators);
 
             foreach (string enumValue in enumValues)
@@ -693,6 +722,30 @@ namespace Microsoft.Exchange.WebServices.Data
             else
             {
                 return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
+            }
+        }
+
+        /// <summary>
+        /// Tries to parses the specified value to the specified type.
+        /// </summary>
+        /// <typeparam name="T">The type into which to cast the provided value.</typeparam>
+        /// <param name="value">The value to parse.</param>
+        /// <param name="result">The value cast to the specified type, if TryParse succeeds. Otherwise, the value of result is indeterminate.</param>
+        /// <returns>True if value could be parsed; otherwise, false.</returns>
+        internal static bool TryParse<T>(string value, out T result)
+        {
+            try
+            {
+                result = EwsUtilities.Parse<T>(value);
+
+                return true;
+            }
+            //// Catch all exceptions here, we're not interested in the reason why TryParse failed.
+            catch (Exception)
+            {
+                result = default(T);
+
+                return false;
             }
         }
 

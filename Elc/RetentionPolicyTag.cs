@@ -1,12 +1,27 @@
-﻿// ---------------------------------------------------------------------------
-// <copyright file="RetentionPolicyTag.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the RetentionPolicyTag class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -83,63 +98,6 @@ namespace Microsoft.Exchange.WebServices.Data
             retentionPolicyTag.IsVisible = reader.ReadElementValue<bool>(XmlNamespace.Types, XmlElementNames.IsVisible);
             retentionPolicyTag.OptedInto = reader.ReadElementValue<bool>(XmlNamespace.Types, XmlElementNames.OptedInto);
             retentionPolicyTag.IsArchive = reader.ReadElementValue<bool>(XmlNamespace.Types, XmlElementNames.IsArchive);
-
-            return retentionPolicyTag;
-        }
-
-        /// <summary>
-        /// Load from json.
-        /// </summary>
-        /// <param name="jsonObject">The json object.</param>
-        /// <returns>Retention policy tag object.</returns>
-        internal static RetentionPolicyTag LoadFromJson(JsonObject jsonObject)
-        {
-            RetentionPolicyTag retentionPolicyTag = new RetentionPolicyTag();
-
-            if (jsonObject.ContainsKey(XmlElementNames.DisplayName))
-            {
-                retentionPolicyTag.DisplayName = jsonObject.ReadAsString(XmlElementNames.DisplayName);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.RetentionId))
-            {
-                retentionPolicyTag.RetentionId = new Guid(jsonObject.ReadAsString(XmlElementNames.RetentionId));
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.RetentionPeriod))
-            {
-                retentionPolicyTag.RetentionPeriod = jsonObject.ReadAsInt(XmlElementNames.RetentionPeriod);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.Type))
-            {
-                retentionPolicyTag.Type = jsonObject.ReadEnumValue<ElcFolderType>(XmlElementNames.Type);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.RetentionAction))
-            {
-                retentionPolicyTag.RetentionAction = jsonObject.ReadEnumValue<RetentionActionType>(XmlElementNames.RetentionAction);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.Description))
-            {
-                retentionPolicyTag.Description = jsonObject.ReadAsString(XmlElementNames.Description);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.IsVisible))
-            {
-                retentionPolicyTag.IsVisible = jsonObject.ReadAsBool(XmlElementNames.IsVisible);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.OptedInto))
-            {
-                retentionPolicyTag.OptedInto = jsonObject.ReadAsBool(XmlElementNames.OptedInto);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.IsArchive))
-            {
-                retentionPolicyTag.IsArchive = jsonObject.ReadAsBool(XmlElementNames.IsArchive);
-            }
 
             return retentionPolicyTag;
         }

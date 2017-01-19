@@ -1,12 +1,27 @@
-﻿// ---------------------------------------------------------------------------
-// <copyright file="SeekToConditionItemView.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the SeekToConditionItemView class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -65,11 +80,6 @@ namespace Microsoft.Exchange.WebServices.Data
             return XmlElementNames.SeekToConditionPageItemView;
         }
 
-        internal override string GetViewJsonTypeName()
-        {
-            return "SeekToConditionPageView";
-        }
-
         /// <summary>
         /// Validates this view.
         /// </summary>
@@ -98,25 +108,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Internals the write paging to json.
-        /// </summary>
-        /// <param name="jsonView">The json view.</param>
-        /// <param name="service">The service.</param>
-        internal override void InternalWritePagingToJson(JsonObject jsonView, ExchangeService service)
-        {
-            base.InternalWritePagingToJson(jsonView, service);
-            jsonView.Add(XmlAttributeNames.BasePoint, this.OffsetBasePoint);
-
-            if (this.Condition != null)
-            {
-                JsonObject jsonCondition = new JsonObject();
-                jsonCondition.Add(XmlElementNames.Item, this.Condition.InternalToJson(service));
-
-                jsonView.Add(XmlElementNames.Condition, jsonCondition);
-            }
-        }
-
-        /// <summary>
         /// Internals the write search settings to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -126,24 +117,6 @@ namespace Microsoft.Exchange.WebServices.Data
             if (groupBy != null)
             {
                 groupBy.WriteToXml(writer);
-            }
-        }
-
-        /// <summary>
-        /// Writes the grouping to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="groupBy"></param>
-        /// <returns></returns>
-        internal override object WriteGroupingToJson(ExchangeService service, Grouping groupBy)
-        {
-            if (groupBy != null)
-            {
-                return ((IJsonSerializable)groupBy).ToJson(service);
-            }
-            else
-            {
-                return null;
             }
         }
 
@@ -163,21 +136,6 @@ namespace Microsoft.Exchange.WebServices.Data
         internal override void WriteOrderByToXml(EwsServiceXmlWriter writer)
         {
             this.orderBy.WriteToXml(writer, XmlElementNames.SortOrder);
-        }
-
-        /// <summary>
-        /// Adds the json properties.
-        /// </summary>
-        /// <param name="jsonRequest">The json request.</param>
-        /// <param name="service">The service.</param>
-        internal override void AddJsonProperties(JsonObject jsonRequest, ExchangeService service)
-        {
-            if (this.serviceObjType == ServiceObjectType.Item)
-            {
-                jsonRequest.Add(XmlAttributeNames.Traversal, this.Traversal);
-            }
-
-            jsonRequest.Add(XmlElementNames.SortOrder, ((IJsonSerializable)this.orderBy).ToJson(service));
         }
 
         /// <summary>

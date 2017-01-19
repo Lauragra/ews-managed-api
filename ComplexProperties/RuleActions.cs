@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="RuleActions.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the RuleActions class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -369,71 +384,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service">The service.</param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlElementNames.AssignCategories:
-                        this.assignCategories.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.CopyToFolder:
-                        this.copyToFolder = new FolderId();
-                        this.copyToFolder.LoadFromJson(
-                            jsonProperty.ReadAsJsonObject(key), 
-                            service);
-                        break;
-                    case XmlElementNames.Delete:
-                        this.delete = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.ForwardAsAttachmentToRecipients:
-                        this.forwardAsAttachmentToRecipients.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.ForwardToRecipients:
-                        this.forwardToRecipients.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.MarkImportance:
-                        this.markImportance = jsonProperty.ReadEnumValue<Importance>(key);
-                        break;
-                    case XmlElementNames.MarkAsRead:
-                        this.markAsRead = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.MoveToFolder:
-                        this.moveToFolder = new FolderId();
-                        this.moveToFolder.LoadFromJson(
-                            jsonProperty.ReadAsJsonObject(key), 
-                            service);
-                        break;
-                    case XmlElementNames.PermanentDelete:
-                        this.permanentDelete = jsonProperty.ReadAsBool(key);
-                        break;
-                    case XmlElementNames.RedirectToRecipients:
-                        this.redirectToRecipients.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.SendSMSAlertToRecipients:
-                        EmailAddressCollection smsRecipientCollection = new EmailAddressCollection(XmlElementNames.Address);
-                        smsRecipientCollection.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        this.sendSMSAlertToRecipients = ConvertSMSRecipientsFromEmailAddressCollectionToMobilePhoneCollection(smsRecipientCollection);
-                        break;
-                    case XmlElementNames.ServerReplyWithMessage:
-                        this.serverReplyWithMessage = new ItemId();
-                        this.serverReplyWithMessage.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.StopProcessingRules:
-                        this.stopProcessingRules = jsonProperty.ReadAsBool(key);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Writes elements to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -523,86 +473,6 @@ namespace Microsoft.Exchange.WebServices.Data
                     XmlElementNames.StopProcessingRules, 
                     this.StopProcessingRules);
             }
-        }
-
-        /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonProperty = new JsonObject();
-
-            if (this.AssignCategories.Count > 0)
-            {
-                jsonProperty.Add(XmlElementNames.AssignCategories, this.AssignCategories.InternalToJson(service));
-            }
-
-            if (this.CopyToFolder != null)
-            {
-                jsonProperty.Add(XmlElementNames.CopyToFolder, this.CopyToFolder.InternalToJson(service));
-            }
-
-            if (this.Delete != false)
-            {
-                jsonProperty.Add(XmlElementNames.Delete, this.Delete);
-            }
-
-            if (this.ForwardAsAttachmentToRecipients.Count > 0)
-            {
-                jsonProperty.Add(XmlElementNames.ForwardAsAttachmentToRecipients, this.ForwardAsAttachmentToRecipients.InternalToJson(service));
-            }
-
-            if (this.ForwardToRecipients.Count > 0)
-            {
-                jsonProperty.Add(XmlElementNames.ForwardToRecipients, this.ForwardToRecipients.InternalToJson(service));
-            }
-
-            if (this.MarkImportance.HasValue)
-            {
-                jsonProperty.Add(XmlElementNames.MarkImportance, this.MarkImportance.Value);
-            }
-
-            if (this.MarkAsRead != false)
-            {
-                jsonProperty.Add(XmlElementNames.MarkAsRead, this.MarkAsRead);
-            }
-
-            if (this.MoveToFolder != null)
-            {
-                jsonProperty.Add(XmlElementNames.MoveToFolder, this.MoveToFolder.InternalToJson(service));
-            }
-
-            if (this.PermanentDelete != false)
-            {
-                jsonProperty.Add(XmlElementNames.PermanentDelete, this.PermanentDelete);
-            }
-
-            if (this.RedirectToRecipients.Count > 0)
-            {
-                jsonProperty.Add(XmlElementNames.RedirectToRecipients, this.RedirectToRecipients.InternalToJson(service));
-            }
-
-            if (this.SendSMSAlertToRecipients.Count > 0)
-            {
-                EmailAddressCollection emailCollection = ConvertSMSRecipientsFromMobilePhoneCollectionToEmailAddressCollection(this.SendSMSAlertToRecipients);
-                jsonProperty.Add(XmlElementNames.SendSMSAlertToRecipients, emailCollection.InternalToJson(service));
-            }
-
-            if (this.ServerReplyWithMessage != null)
-            {
-                jsonProperty.Add(XmlElementNames.ServerReplyWithMessage, this.ServerReplyWithMessage.InternalToJson(service));
-            }
-
-            if (this.StopProcessingRules != false)
-            {
-                jsonProperty.Add(XmlElementNames.StopProcessingRules, this.StopProcessingRules);
-            }
-
-            return jsonProperty;
         }
 
         /// <summary>

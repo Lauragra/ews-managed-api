@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="GetConversationItemsRequest.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the GetConversationItemsRequest class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -17,7 +32,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// <summary>
     /// Represents a request to a GetConversationItems operation
     /// </summary>
-    internal sealed class GetConversationItemsRequest : MultiResponseServiceRequest<GetConversationItemsResponse>, IJsonSerializable
+    internal sealed class GetConversationItemsRequest : MultiResponseServiceRequest<GetConversationItemsResponse>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GetConversationItemsRequest"/> class.
@@ -113,48 +128,6 @@ namespace Microsoft.Exchange.WebServices.Data
             writer.WriteStartElement(XmlNamespace.Messages, XmlElementNames.Conversations);
             this.Conversations.ForEach((conversation) => conversation.WriteToXml(writer, XmlElementNames.Conversation));
             writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Creates a JSON representation of this object.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        object IJsonSerializable.ToJson(ExchangeService service)
-        {
-            JsonObject jsonRequest = new JsonObject();
-
-            this.ItemProperties.WriteGetShapeToJson(jsonRequest, service, ServiceObjectType.Item);
-
-            if (this.FoldersToIgnore.Count > 0)
-            {
-                jsonRequest.Add(XmlElementNames.FoldersToIgnore, this.FoldersToIgnore.InternalToJson(service));
-            }
-
-            if (this.MaxItemsToReturn.HasValue)
-            {
-                jsonRequest.Add(XmlElementNames.MaxItemsToReturn, this.MaxItemsToReturn.Value);
-            }
-
-            if (this.SortOrder.HasValue)
-            {
-                jsonRequest.Add(XmlElementNames.SortOrder, this.SortOrder.Value);
-            }
-
-            if (this.MailboxScope.HasValue)
-            {
-                jsonRequest.Add(XmlElementNames.MailboxScope, this.MailboxScope.Value);
-            }
-
-            List<object> jsonPropertyCollection = new List<object>();
-
-            this.Conversations.ForEach((conversation) => jsonPropertyCollection.Add(conversation.InternalToJson(service)));
-
-            jsonRequest.Add(XmlElementNames.Conversations, jsonPropertyCollection.ToArray());
-
-            return jsonRequest;
         }
 
         /// <summary>

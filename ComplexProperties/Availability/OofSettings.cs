@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="OofSettings.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the OofSettings class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -88,41 +103,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service"></param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlElementNames.OofState:
-                        this.state = jsonProperty.ReadEnumValue<OofState>(key);
-                        break;
-                    case XmlElementNames.ExternalAudience:
-                        this.externalAudience = jsonProperty.ReadEnumValue<OofExternalAudience>(key);
-                        break;
-                    case XmlElementNames.Duration:
-                        this.duration = new TimeWindow();
-                        this.duration.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.InternalReply:
-                        this.internalReply = new OofReply();
-                        this.internalReply.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    case XmlElementNames.ExternalReply:
-                        this.externalReply = new OofReply();
-                        this.externalReply.LoadFromJson(jsonProperty.ReadAsJsonObject(key), service);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
         /// Writes elements to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -153,31 +133,6 @@ namespace Microsoft.Exchange.WebServices.Data
                 this.ExternalReply,
                 writer,
                 XmlElementNames.ExternalReply);
-        }
-
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonProperty = new JsonObject();
-
-            jsonProperty.Add(XmlElementNames.OofState, this.State);
-            jsonProperty.Add(XmlElementNames.ExternalAudience, this.ExternalAudience);
-
-            if (this.Duration != null && this.State == OofState.Scheduled)
-            {
-                jsonProperty.Add(XmlElementNames.Duration, this.Duration.InternalToJson(service));
-            }
-
-            if (this.InternalReply != null)
-            {
-                jsonProperty.Add(XmlElementNames.InternalReply, this.InternalReply.InternalToJson(service));
-            }
-
-            if (this.ExternalReply != null)
-            {
-                jsonProperty.Add(XmlElementNames.ExternalReply, this.ExternalReply.InternalToJson(service));
-            }
-
-            return jsonProperty;
         }
 
         /// <summary>

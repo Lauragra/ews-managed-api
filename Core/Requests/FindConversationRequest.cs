@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="FindConversationRequest.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the FindConversationRequest class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -17,7 +32,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// <summary>
     /// Represents a request to a Find Conversation operation
     /// </summary>
-    internal sealed class FindConversationRequest : SimpleServiceRequestBase, IJsonSerializable
+    internal sealed class FindConversationRequest : SimpleServiceRequestBase
     {
         private ViewBase view;
         private FolderIdWrapper folderId;
@@ -235,52 +250,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Creates a JSON representation of this object.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        object IJsonSerializable.ToJson(ExchangeService service)
-        {
-            JsonObject jsonRequest = new JsonObject();
-
-            jsonRequest.Add("Paging", this.View.WritePagingToJson(service));
-            this.View.AddJsonProperties(jsonRequest, service);
-
-            JsonObject jsonTargetFolderId = new JsonObject();
-            jsonTargetFolderId.Add(XmlElementNames.BaseFolderId, this.FolderId.InternalToJson(service));
-            jsonRequest.Add(XmlElementNames.ParentFolderId, jsonTargetFolderId);
-
-            if (this.MailboxScope.HasValue)
-            {
-                jsonRequest.Add(XmlElementNames.MailboxScope, this.MailboxScope.Value);
-            }
-
-            if (!string.IsNullOrEmpty(this.queryString))
-            {
-                JsonObject jsonQueryString = new JsonObject();
-                jsonQueryString.Add(XmlAttributeNames.Value, this.QueryString);
-
-                if (this.ReturnHighlightTerms)
-                {
-                    jsonQueryString.Add(XmlAttributeNames.ReturnHighlightTerms, this.ReturnHighlightTerms.ToString().ToLowerInvariant());
-                }
-
-                jsonRequest.Add(XmlElementNames.QueryString, jsonQueryString);
-            }
-
-            if (this.Service.RequestedServerVersion >= ExchangeVersion.Exchange2013)
-            {
-                if (this.View.PropertySet != null)
-                {
-                    this.View.PropertySet.WriteGetShapeToJson(jsonRequest, service, ServiceObjectType.Conversation);
-                }
-            }
-            return jsonRequest;
-        }
-
-        /// <summary>
         /// Parses the response.
         /// </summary>
         /// <param name="reader">The reader.</param>
@@ -290,18 +259,6 @@ namespace Microsoft.Exchange.WebServices.Data
             FindConversationResponse response = new FindConversationResponse();
             response.LoadFromXml(reader, XmlElementNames.FindConversationResponse);
             return response;
-        }
-
-        /// <summary>
-        /// Parses the response.
-        /// </summary>
-        /// <param name="jsonBody">The json body.</param>
-        /// <returns>Response object.</returns>
-        internal override object ParseResponse(JsonObject jsonBody)
-        {
-            FindConversationResponse serviceResponse = new FindConversationResponse();
-            serviceResponse.LoadFromJson(jsonBody, this.Service);
-            return serviceResponse;
         }
 
         /// <summary>

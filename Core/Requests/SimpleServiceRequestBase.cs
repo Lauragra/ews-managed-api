@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="SimpleServiceRequestBase.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the SimpleServiceRequestBase class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -124,40 +139,16 @@ namespace Microsoft.Exchange.WebServices.Data
                             memoryStream.Position = 0;
                         }
 
-                        if (this.Service.RenderingMethod == ExchangeService.RenderingMode.Xml)
-                        {
-                            this.TraceResponseXml(response, memoryStream);
+                        this.TraceResponseXml(response, memoryStream);
 
-                            serviceResponse = this.ReadResponseXml(memoryStream);
-                        }
-                        else if (this.Service.RenderingMethod == ExchangeService.RenderingMode.JSON)
-                        {
-                            this.TraceResponseJson(response, memoryStream);
-
-                            serviceResponse = this.ReadResponseJson(memoryStream);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Unknown RenderingMethod.");
-                        }
+                        serviceResponse = this.ReadResponseXml(memoryStream, response.Headers);
                     }
                 }
                 else
                 {
                     using (Stream responseStream = ServiceRequestBase.GetResponseStream(response))
                     {
-                        if (this.Service.RenderingMethod == ExchangeService.RenderingMode.Xml)
-                        {
-                            serviceResponse = this.ReadResponseXml(responseStream);
-                        }
-                        else if (this.Service.RenderingMethod == ExchangeService.RenderingMode.JSON)
-                        {
-                            serviceResponse = this.ReadResponseJson(responseStream);
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException("Unknown RenderingMethod.");
-                        }
+                        serviceResponse = this.ReadResponseXml(responseStream, response.Headers);
                     }
                 }
             }
@@ -188,26 +179,26 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Reads the response json.
-        /// </summary>
-        /// <param name="responseStream">The response stream.</param>
-        /// <returns></returns>
-        private object ReadResponseJson(Stream responseStream)
-        {
-            JsonObject jsonResponse = new JsonParser(responseStream).Parse();
-            return this.BuildResponseObjectFromJson(jsonResponse);
-        }
-
-        /// <summary>
         /// Reads the response XML.
         /// </summary>
         /// <param name="responseStream">The response stream.</param>
         /// <returns></returns>
         private object ReadResponseXml(Stream responseStream)
         {
+            return this.ReadResponseXml(responseStream, null);
+        }
+
+        /// <summary>
+        /// Reads the response XML.
+        /// </summary>
+        /// <param name="responseStream">The response stream.</param>
+        /// <param name="responseHeaders">The HTTP response headers</param>
+        /// <returns></returns>
+        private object ReadResponseXml(Stream responseStream, WebHeaderCollection responseHeaders)
+        {
             object serviceResponse;
             EwsServiceXmlReader ewsXmlReader = new EwsServiceXmlReader(responseStream, this.Service);
-            serviceResponse = this.ReadResponse(ewsXmlReader);
+            serviceResponse = this.ReadResponse(ewsXmlReader, responseHeaders);
             return serviceResponse;
         }
     }

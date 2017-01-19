@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="PropertySet.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the PropertySet class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -241,6 +256,8 @@ namespace Microsoft.Exchange.WebServices.Data
                     return XmlElementNames.FolderShape;
                 case ServiceObjectType.Conversation:
                     return XmlElementNames.ConversationShape;
+                case ServiceObjectType.Persona:
+                    return XmlElementNames.PersonaShape;
                 default:
                     EwsUtilities.Assert(
                         false,
@@ -473,24 +490,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Writes the additional properties to json.
-        /// </summary>
-        /// <param name="jsonItemShape">The json attachment shape.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="propertyDefinitions">The property definitions.</param>
-        internal static void WriteAdditionalPropertiesToJson(JsonObject jsonItemShape, ExchangeService service, IEnumerable<PropertyDefinitionBase> propertyDefinitions)
-        {
-            List<object> additionalProperties = new List<object>();
-            
-            foreach (PropertyDefinitionBase propertyDefinition in propertyDefinitions)
-            {
-                additionalProperties.Add(((IJsonSerializable)propertyDefinition).ToJson(service));
-            }
-
-            jsonItemShape.Add(XmlElementNames.AdditionalProperties, additionalProperties.ToArray());
-        }
-
-        /// <summary>
         /// Validates this property set.
         /// </summary>
         internal void InternalValidate()
@@ -713,71 +712,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             writer.WriteEndElement(); // Item/FolderShape
-        }
-
-        /// <summary>
-        /// Writes the get shape to json.
-        /// </summary>
-        /// <param name="jsonRequest">The json request.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="serviceObjectType">Type of the service object.</param>
-        internal void WriteGetShapeToJson(JsonObject jsonRequest, ExchangeService service, ServiceObjectType serviceObjectType)
-        {
-            string shapeName = GetShapeName(serviceObjectType);
-
-            JsonObject jsonShape = new JsonObject();
-
-            jsonShape.Add(XmlElementNames.BaseShape, defaultPropertySetMap.Member[this.BasePropertySet]);
-
-            if (serviceObjectType == ServiceObjectType.Item)
-            {
-                if (this.RequestedBodyType.HasValue)
-                {
-                    jsonShape.Add(XmlElementNames.BodyType, this.RequestedBodyType.Value);
-                }
-
-                if (this.FilterHtmlContent.HasValue)
-                {
-                    jsonShape.Add(XmlElementNames.FilterHtmlContent, this.FilterHtmlContent.Value);
-                }
-
-                if (this.ConvertHtmlCodePageToUTF8.HasValue &&
-                    service.RequestedServerVersion >= ExchangeVersion.Exchange2010_SP1)
-                {
-                    jsonShape.Add(XmlElementNames.ConvertHtmlCodePageToUTF8, this.ConvertHtmlCodePageToUTF8.Value);
-                }
-
-                if (!string.IsNullOrEmpty(this.InlineImageUrlTemplate) &&
-                    service.RequestedServerVersion >= ExchangeVersion.Exchange2013)
-                {
-                    jsonShape.Add(XmlElementNames.InlineImageUrlTemplate, this.InlineImageUrlTemplate);
-                }
-
-                if (this.BlockExternalImages.HasValue &&
-                    service.RequestedServerVersion >= ExchangeVersion.Exchange2013)
-                {
-                    jsonShape.Add(XmlElementNames.BlockExternalImages, this.BlockExternalImages.Value);
-                }
-
-                if (this.AddBlankTargetToLinks.HasValue &&
-                    service.RequestedServerVersion >= ExchangeVersion.Exchange2013)
-                {
-                    jsonShape.Add(XmlElementNames.AddBlankTargetToLinks, this.AddBlankTargetToLinks.Value);
-                }
-
-                if (this.MaximumBodySize.HasValue &&
-                    service.RequestedServerVersion >= ExchangeVersion.Exchange2013)
-                {
-                    jsonShape.Add(XmlElementNames.MaximumBodySize, this.MaximumBodySize.Value);
-                }
-            }
-
-            if (this.additionalProperties.Count > 0)
-            {
-                WriteAdditionalPropertiesToJson(jsonShape, service, this.additionalProperties);
-            }
-
-            jsonRequest.Add(shapeName, jsonShape);
         }
 
         #region IEnumerable<PropertyDefinitionBase> Members

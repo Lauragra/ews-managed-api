@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="WellKnownFolderName.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the WellKnownFolderName enumeration.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -148,11 +163,25 @@ namespace Microsoft.Exchange.WebServices.Data
         RecoverableItemsPurges,
 
         /// <summary>
+        /// The Dumpster 2.0 discovery hold folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013_SP1)]
+        [EwsEnum("recoverableitemsdiscoveryholds")]
+        RecoverableItemsDiscoveryHolds,
+
+        /// <summary>
         /// The root of the archive mailbox.
         /// </summary>
         [RequiredServerVersion(ExchangeVersion.Exchange2010_SP1)]
         [EwsEnum("archiveroot")]
         ArchiveRoot,
+
+        /// <summary>
+        /// The root of the archive mailbox.
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013_SP1)]
+        [EwsEnum("archiveinbox")]
+        ArchiveInbox,
 
         /// <summary>
         /// The message folder root in the archive mailbox.
@@ -195,6 +224,13 @@ namespace Microsoft.Exchange.WebServices.Data
         [RequiredServerVersion(ExchangeVersion.Exchange2010_SP1)]
         [EwsEnum("archiverecoverableitemspurges")]
         ArchiveRecoverableItemsPurges,
+
+        /// <summary>
+        /// The Dumpster 2.0 discovery hold folder in the archive mailbox.
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013_SP1)]
+        [EwsEnum("archiverecoverableitemsdiscoveryholds")]
+        ArchiveRecoverableItemsDiscoveryHolds,
 
         /// <summary>
         /// The Sync Issues folder.
@@ -246,11 +282,54 @@ namespace Microsoft.Exchange.WebServices.Data
         ConversationHistory,
 
         /// <summary>
+        /// AdminAuditLogs folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013)]
+        [EwsEnum("adminauditlogs")]
+        AdminAuditLogs,
+
+        /// <summary>
         /// ToDo search folder
         /// </summary>
         [RequiredServerVersion(ExchangeVersion.Exchange2013)]
         [EwsEnum("todosearch")]
         ToDoSearch,
+
+        /// <summary>
+        /// MyContacts folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013)]
+        [EwsEnum("mycontacts")]
+        MyContacts,
+
+        /// <summary>
+        /// Directory (GAL)
+        /// It is not a mailbox folder. It only indicates any GAL operation.
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013_SP1)]
+        [EwsEnum("directory")]
+        Directory,
+
+        /// <summary>
+        /// IMContactList folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013)]
+        [EwsEnum("imcontactlist")]
+        IMContactList,
+
+        /// <summary>
+        /// PeopleConnect folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013)]
+        [EwsEnum("peopleconnect")]
+        PeopleConnect,
+
+        /// <summary>
+        /// Favorites folder
+        /// </summary>
+        [RequiredServerVersion(ExchangeVersion.Exchange2013)]
+        [EwsEnum("favorites")]
+        Favorites,
 
         //// Note when you adding new folder id here, please update sources\test\Services\src\ComponentTests\GlobalVersioningControl.cs
         //// IsExchange2013Folder method accordingly.

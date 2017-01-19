@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="TimeZoneDefinition.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the TimeZoneDefinition class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -84,15 +99,15 @@ namespace Microsoft.Exchange.WebServices.Data
             standardPeriod.Id = TimeZonePeriod.StandardPeriodId;
             standardPeriod.Name = TimeZonePeriod.StandardPeriodName;
             standardPeriod.Bias = -timeZoneInfo.BaseUtcOffset;
-
-            this.periods.Add(standardPeriod.Id, standardPeriod);
-
+            
             TimeZoneInfo.AdjustmentRule[] adjustmentRules = timeZoneInfo.GetAdjustmentRules();
 
             TimeZoneTransition transitionToStandardPeriod = new TimeZoneTransition(this, standardPeriod);
 
             if (adjustmentRules.Length == 0)
             {
+                this.periods.Add(standardPeriod.Id, standardPeriod);
+
                 // If the time zone info doesn't support Daylight Saving Time, we just need to
                 // create one transition to one group with one transition to the standard period.
                 TimeZoneTransitionGroup transitionGroup = new TimeZoneTransitionGroup(this, "0");
@@ -132,6 +147,7 @@ namespace Microsoft.Exchange.WebServices.Data
                             absoluteDateTransition.DateTime = adjustmentRules[i].DateStart;
 
                             transition = absoluteDateTransition;
+                            this.periods.Add(standardPeriod.Id, standardPeriod);
                         }
                         else
                         {
@@ -235,7 +251,24 @@ namespace Microsoft.Exchange.WebServices.Data
                             TimeZonePeriod period = new TimeZonePeriod();
                             period.LoadFromXml(reader);
 
-                            this.periods.Add(period.Id, period);
+                            // OM:1648848 Bad timezone data from clients can include duplicate rules
+                            // for one year, with duplicate ID. In that case, let the first one win.
+                            if (!this.periods.ContainsKey(period.Id))
+                            {
+                                this.periods.Add(period.Id, period);
+                            }
+                            else
+                            {
+                                reader.Service.TraceMessage(
+                                    TraceFlags.EwsTimeZones,
+                                    string.Format(
+                                        "An entry with the same key (Id) '{0}' already exists in Periods. Cannot add another one. Existing entry: [Name='{1}', Bias='{2}']. Entry to skip: [Name='{3}', Bias='{4}'].",
+                                        period.Id,
+                                        this.Periods[period.Id].Name,
+                                        this.Periods[period.Id].Bias,
+                                        period.Name,
+                                        period.Bias));
+                            }
                         }
                     }
                     while (!reader.IsEndElement(XmlNamespace.Types, XmlElementNames.Periods));
@@ -292,76 +325,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service">The service.</param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            base.LoadFromJson(jsonProperty, service);
-
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlAttributeNames.Name:
-                        this.name = jsonProperty.ReadAsString(key);
-                        break;
-                    case XmlAttributeNames.Id:
-                        this.id = jsonProperty.ReadAsString(key);
-                        break;
-                    case XmlElementNames.Periods:
-                        foreach (object jsonPeriod in jsonProperty.ReadAsArray(key))
-                        {
-                            TimeZonePeriod period = new TimeZonePeriod();
-                            period.LoadFromJson(jsonPeriod as JsonObject, service);
-
-                            this.periods.Add(period.Id, period);
-                        }
-
-                        break;
-
-                    case XmlElementNames.TransitionsGroups:
-                        foreach (object arrayOfTransitionsTypeInstance in jsonProperty.ReadAsArray(key))
-                        {
-                            TimeZoneTransitionGroup transitionGroup = new TimeZoneTransitionGroup(this);
-                            transitionGroup.LoadFromJson(arrayOfTransitionsTypeInstance as JsonObject, service);
-
-                            this.transitionGroups.Add(transitionGroup.Id, transitionGroup);
-                        }
-
-                        break;
-
-                    case XmlElementNames.Transitions:
-                        JsonObject arrayOfTransitionsType = jsonProperty.ReadAsJsonObject(key);
-
-                        foreach (object uncastJsonTransition in arrayOfTransitionsType.ReadAsArray(XmlElementNames.Transition))
-                        {
-                            JsonObject jsonTransition = uncastJsonTransition as JsonObject;
-                            TimeZoneTransition transition = TimeZoneTransition.Create(this, jsonTransition.ReadTypeString());
-
-                            transition.LoadFromJson(jsonTransition, service);
-
-                            this.transitions.Add(transition);
-                        }
-
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            // EWS can return a TimeZone definition with no Id. Generate a new Id in this case.
-            if (string.IsNullOrEmpty(this.id))
-            {
-                string nameValue = string.IsNullOrEmpty(this.Name) ? string.Empty : this.Name;
-                this.Id = NoIdPrefix + Math.Abs(nameValue.GetHashCode()).ToString();
-            }
-
-            this.transitions.Sort(this.CompareTransitions);
-        }
-
-        /// <summary>
         /// Writes elements to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -406,67 +369,6 @@ namespace Microsoft.Exchange.WebServices.Data
                     writer.WriteEndElement(); // Transitions
                 }
             }
-        }
-
-        /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonTimeZoneDefinition = new JsonObject();
-
-            jsonTimeZoneDefinition.Add(XmlAttributeNames.Id, this.id);
-
-            // We only emit the full time zone definition against Exchange 2010 servers and above.
-            if (service.RequestedServerVersion != ExchangeVersion.Exchange2007_SP1)
-            {
-                jsonTimeZoneDefinition.Add(XmlAttributeNames.Name, this.name);
-
-                if (this.periods.Count > 0)
-                {
-                    List<object> jsonPeriods = new List<object>();
-
-                    foreach (KeyValuePair<string, TimeZonePeriod> keyValuePair in this.periods)
-                    {
-                        jsonPeriods.Add(keyValuePair.Value.InternalToJson(service));
-                    }
-
-                    jsonTimeZoneDefinition.Add(XmlElementNames.Periods, jsonPeriods.ToArray());
-                }
-
-                if (this.transitionGroups.Count > 0)
-                {
-                    List<object> jsonTransitionGroups = new List<object>();
-
-                    foreach (KeyValuePair<string, TimeZoneTransitionGroup> keyValuePair in this.transitionGroups)
-                    {
-                        jsonTransitionGroups.Add(keyValuePair.Value.InternalToJson(service));
-                    }
-
-                    jsonTimeZoneDefinition.Add(XmlElementNames.TransitionsGroups, jsonTransitionGroups.ToArray());
-                }
-
-                if (this.transitions.Count > 0)
-                {
-                    JsonObject transisitionsJsonObject = new JsonObject();
-
-                    List<object> jsonTransitions = new List<object>();
-
-                    foreach (TimeZoneTransition transition in this.transitions)
-                    {
-                        jsonTransitions.Add(transition.InternalToJson(service));
-                    }
-
-                    transisitionsJsonObject.Add(XmlElementNames.Transition, jsonTransitions.ToArray());
-                    jsonTimeZoneDefinition.Add(XmlElementNames.Transitions, transisitionsJsonObject);
-                }
-            }
-
-            return jsonTimeZoneDefinition;
         }
 
         /// <summary>
@@ -524,8 +426,9 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <summary>
         /// Converts this time zone definition into a TimeZoneInfo structure.
         /// </summary>
+        /// <param name="service">The service.</param>
         /// <returns>A TimeZoneInfo representing the same time zone as this definition.</returns>
-        internal TimeZoneInfo ToTimeZoneInfo()
+        internal TimeZoneInfo ToTimeZoneInfo(ExchangeService service)
         {
             this.Validate();
 
@@ -556,14 +459,28 @@ namespace Microsoft.Exchange.WebServices.Data
                     effectiveEndDate = endDate;
                 }
 
-                TimeZoneInfo.AdjustmentRule adjustmentRule = this.transitions[i].TargetGroup.CreateAdjustmentRule(startDate, effectiveEndDate);
-
-                if (adjustmentRule != null)
+                // OM:1648848 Due to bad timezone data from clients the 
+                // startDate may not always come before the effectiveEndDate
+                if (startDate < effectiveEndDate)
                 {
-                    adjustmentRules.Add(adjustmentRule);
-                }
+                    TimeZoneInfo.AdjustmentRule adjustmentRule = this.transitions[i].TargetGroup.CreateAdjustmentRule(startDate, effectiveEndDate);
 
-                startDate = endDate;
+                    if (adjustmentRule != null)
+                    {
+                        adjustmentRules.Add(adjustmentRule);
+                    }
+
+                    startDate = endDate;
+                }
+                else
+                {
+                    service.TraceMessage(
+                        TraceFlags.EwsTimeZones,
+                            string.Format(
+                                "The startDate '{0}' is not before the effectiveEndDate '{1}'. Will skip creating adjustment rule.",
+                                startDate,
+                                effectiveEndDate));
+                }
             }
 
             if (adjustmentRules.Count == 0)

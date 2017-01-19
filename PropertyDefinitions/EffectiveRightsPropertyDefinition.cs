@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="EffectiveRightsPropertyDefinition.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the EffectiveRightsPropertyDefinition class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -109,66 +124,6 @@ namespace Microsoft.Exchange.WebServices.Data
             propertyBag[this] = value;
         }
 
-        internal override void LoadPropertyValueFromJson(object value, ExchangeService service, PropertyBag propertyBag)
-        {
-            EffectiveRights effectiveRightsValue = EffectiveRights.None;
-            JsonObject jsonObject = value as JsonObject;
-
-            if (jsonObject != null)
-            {
-                foreach (string key in jsonObject.Keys)
-                {
-                    switch (key)
-                    {
-                        case XmlElementNames.CreateAssociated:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.CreateAssociated;
-                            }
-                            break;
-                        case XmlElementNames.CreateContents:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.CreateContents;
-                            }
-                            break;
-                        case XmlElementNames.CreateHierarchy:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.CreateHierarchy;
-                            }
-                            break;
-                        case XmlElementNames.Delete:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.Delete;
-                            }
-                            break;
-                        case XmlElementNames.Modify:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.Modify;
-                            }
-                            break;
-                        case XmlElementNames.Read:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.Read;
-                            }
-                            break;
-                        case XmlElementNames.ViewPrivateItems:
-                            if (jsonObject.ReadAsBool(key))
-                            {
-                                effectiveRightsValue |= EffectiveRights.ViewPrivateItems;
-                            }
-                            break;
-                    }
-                }
-            }
-
-            propertyBag[this] = value;
-        }
-
         /// <summary>
         /// Writes to XML.
         /// </summary>
@@ -179,18 +134,6 @@ namespace Microsoft.Exchange.WebServices.Data
             EwsServiceXmlWriter writer,
             PropertyBag propertyBag,
             bool isUpdateOperation)
-        {
-            // EffectiveRights is a read-only property, no need to implement this.
-        }
-
-        /// <summary>
-        /// Writes the json value.
-        /// </summary>
-        /// <param name="jsonObject">The json object.</param>
-        /// <param name="propertyBag">The property bag.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="isUpdateOperation">if set to <c>true</c> [is update operation].</param>
-        internal override void WriteJsonValue(JsonObject jsonObject, PropertyBag propertyBag, ExchangeService service, bool isUpdateOperation)
         {
             // EffectiveRights is a read-only property, no need to implement this.
         }

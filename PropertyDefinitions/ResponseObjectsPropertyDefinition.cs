@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="ResponseObjectsPropertyDefinition.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ResponseObjectsPropertyDefinition class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -66,41 +81,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads the property value from json.
-        /// </summary>
-        /// <param name="value">The JSON value.  Can be a JsonObject, string, number, bool, array, or null.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="propertyBag">The property bag.</param>
-        /// <remarks>
-        /// The ResponseActions collection is returned as an array of values of derived ResponseObject types. For example:
-        /// "ResponseObjects" : [ { "__type" : "CancelCalendarItem:#Exchange" }, { "__type" : "ForwardItem:#Exchange" } ]
-        /// </remarks>
-        internal override void LoadPropertyValueFromJson(object value, ExchangeService service, PropertyBag propertyBag)
-        {
-            ResponseActions responseActionValue = ResponseActions.None;
-
-            object[] jsonResponseActions = value as object[];
-
-            if (jsonResponseActions != null)
-            {
-                foreach (JsonObject jsonResponseAction in jsonResponseActions.OfType<JsonObject>())
-                {
-                    if (jsonResponseAction.HasTypeProperty())
-                    {
-                        string actionString = jsonResponseAction.ReadTypeString();
-
-                        if (!string.IsNullOrEmpty(actionString))
-                        {
-                            responseActionValue |= GetResponseAction(actionString);
-                        }
-                    }
-                }
-            }
-
-            propertyBag[this] = responseActionValue;
-        }
-
-        /// <summary>
         /// Gets the response action.
         /// </summary>
         /// <param name="responseActionString">The response action string.</param>
@@ -155,18 +135,6 @@ namespace Microsoft.Exchange.WebServices.Data
             EwsServiceXmlWriter writer,
             PropertyBag propertyBag,
             bool isUpdateOperation)
-        {
-            // ResponseObjects is a read-only property, no need to implement this.
-        }
-
-        /// <summary>
-        /// Writes the json value.
-        /// </summary>
-        /// <param name="jsonObject">The json object.</param>
-        /// <param name="propertyBag">The property bag.</param>
-        /// <param name="service">The service.</param>
-        /// <param name="isUpdateOperation">if set to <c>true</c> [is update operation].</param>
-        internal override void WriteJsonValue(JsonObject jsonObject, PropertyBag propertyBag, ExchangeService service, bool isUpdateOperation)
         {
             // ResponseObjects is a read-only property, no need to implement this.
         }

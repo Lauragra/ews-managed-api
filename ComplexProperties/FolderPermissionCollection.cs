@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="FolderPermissionCollection.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the FolderPermissionCollection class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -93,30 +108,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonProperty">The json property.</param>
-        /// <param name="service">The service.</param>
-        internal override void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            object[] jsonFolderPermissions = jsonProperty.ReadAsArray(this.InnerCollectionXmlElementName);
-            
-            foreach (object jsonFolderPermission in jsonFolderPermissions)
-            {
-                FolderPermission permission = new FolderPermission();
-                permission.LoadFromJson(jsonFolderPermission as JsonObject, service);
-                this.InternalAdd(permission);
-            }
-
-            object[] jsonUnknownEntries = jsonProperty.ReadAsArray(XmlElementNames.UnknownEntries);
-
-            foreach (object jsonUnknownEntry in jsonUnknownEntries)
-            {
-                this.unknownEntries.Add(jsonUnknownEntry as string);
-            }
-        }
-
-        /// <summary>
         /// Validates this instance.
         /// </summary>
         internal void Validate()
@@ -146,43 +137,11 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Serializes the property to a Json value.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonProperty = new JsonObject();
-            List<object> permissions = new List<object>();
-
-            foreach (FolderPermission folderPermission in this)
-            {
-                permissions.Add(folderPermission.InternalToJson(service, this.isCalendarFolder));
-            }
-
-            jsonProperty.AddTypeParameter(this.InnerCollectionXmlElementName);
-            jsonProperty.Add(this.InnerCollectionXmlElementName, permissions.ToArray());
-
-            return jsonProperty;
-        }
-
-        /// <summary>
         /// Creates the complex property.
         /// </summary>
         /// <param name="xmlElementName">Name of the XML element.</param>
         /// <returns>FolderPermission instance.</returns>
         internal override FolderPermission CreateComplexProperty(string xmlElementName)
-        {
-            return new FolderPermission();
-        }
-
-        /// <summary>
-        /// Creates the default complex property.
-        /// </summary>
-        /// <returns>FolderPermission instance.</returns>
-        internal override FolderPermission CreateDefaultComplexProperty()
         {
             return new FolderPermission();
         }

@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="MultiResponseServiceRequest.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the MultiResponseServiceRequest class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -53,7 +68,7 @@ namespace Microsoft.Exchange.WebServices.Data
             // If there's a general error in batch processing,
             // the server will return a single response message containing the error
             // (for example, if the SavedItemFolderId is bogus in a batch CreateItem
-            // call). In this case, throw a ServiceResponsException. Otherwise this 
+            // call). In this case, throw a ServiceResponseException. Otherwise this 
             // is an unexpected server error.
             if (serviceResponses.Count < this.GetExpectedResponseMessageCount())
             {
@@ -73,46 +88,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             reader.ReadEndElementIfNecessary(XmlNamespace.Messages, XmlElementNames.ResponseMessages);
-
-            return serviceResponses;
-        }
-
-        /// <summary>
-        /// Parses the response.
-        /// </summary>
-        /// <param name="jsonBody">The json body.</param>
-        /// <returns>Response object.</returns>
-        internal override object ParseResponse(JsonObject jsonBody)
-        {
-            ServiceResponseCollection<TResponse> serviceResponses = new ServiceResponseCollection<TResponse>();
-
-            object[] jsonResponseMessages = jsonBody.ReadAsJsonObject(XmlElementNames.ResponseMessages).ReadAsArray(XmlElementNames.Items);
-
-            int responseCtr = 0;
-            foreach (object jsonResponseObject in jsonResponseMessages)
-            {
-                TResponse response = this.CreateServiceResponse(this.Service, responseCtr);
-
-                response.LoadFromJson(jsonResponseObject as JsonObject, this.Service);
-
-                // Add the response to the list after it has been deserialized because the response
-                // list updates an overall result as individual responses are added to it.
-                serviceResponses.Add(response);
-
-                responseCtr++;
-            }
-
-            if (serviceResponses.Count < this.GetExpectedResponseMessageCount())
-            {
-                if ((serviceResponses.Count == 1) && (serviceResponses[0].Result == ServiceResult.Error))
-                {
-                    throw new ServiceResponseException(serviceResponses[0]);
-                }
-                else
-                {
-                    throw new ServiceJsonDeserializationException();
-                }
-            }
 
             return serviceResponses;
         }

@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="NameResolutionCollection.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the NameResolutionCollection class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -58,50 +73,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             reader.ReadEndElement(XmlNamespace.Messages, XmlElementNames.ResolutionSet);
-        }
-
-        /// <summary>
-        /// Loads from json array.
-        /// </summary>
-        /// <param name="jsonProperty">The p.</param>
-        /// <param name="service">The service.</param>
-        internal void LoadFromJson(JsonObject jsonProperty, ExchangeService service)
-        {
-            int totalItemsInView;
-            object[] resolutions;
-
-            foreach (string key in jsonProperty.Keys)
-            {
-                switch (key)
-                {
-                    case XmlAttributeNames.TotalItemsInView:
-                        totalItemsInView = jsonProperty.ReadAsInt(key);
-                        break;
-                    case XmlAttributeNames.IncludesLastItemInRange:
-                        this.includesAllResolutions = jsonProperty.ReadAsBool(key);
-                        break;
-                   
-                    // This label only exists for Json objects.  The XML doesn't have a "Resolutions"
-                    // element.  
-                    // This was necessary becaue of the lack of attributes in JSON
-                    //
-                    case "Resolutions":
-                        resolutions = jsonProperty.ReadAsArray(key);
-                        foreach (object resolution in resolutions)
-                        {
-                            JsonObject resolutionProperty = resolution as JsonObject;
-                            if (resolutionProperty != null)
-                            {
-                                NameResolution nameResolution = new NameResolution(this);
-                                nameResolution.LoadFromJson(resolutionProperty, service);
-                                this.items.Add(nameResolution);
-                            }
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
         }
 
         /// <summary>

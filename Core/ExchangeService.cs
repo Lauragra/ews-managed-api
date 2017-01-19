@@ -1,12 +1,27 @@
-//-----------------------------------------------------------------------
-// <copyright file="ExchangeService.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ExchangeService class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -19,6 +34,8 @@ namespace Microsoft.Exchange.WebServices.Data
     using System.Net;
     using System.Xml;
     using Microsoft.Exchange.WebServices.Autodiscover;
+    using Microsoft.Exchange.WebServices.Data.Enumerations;
+    using Microsoft.Exchange.WebServices.Data.Groups;
 
     /// <summary>
     /// Represents a binding to the Exchange Web Services.
@@ -42,7 +59,6 @@ namespace Microsoft.Exchange.WebServices.Data
         private IFileAttachmentContentHandler fileAttachmentContentHandler;
         private UnifiedMessaging unifiedMessaging;
         private bool enableScpLookup = true;
-        private ExchangeService.RenderingMode renderingMode = RenderingMode.Xml;
         private bool traceEnablePrettyPrinting = true;
         private string targetServerVersion = null;
 
@@ -272,12 +288,11 @@ namespace Microsoft.Exchange.WebServices.Data
             EwsUtilities.ValidateParam(folderId, "folderId");
             EwsUtilities.ValidateParam(propertySet, "propertySet");
 
-            GetFolderRequest request = new GetFolderRequest(this, ServiceErrorHandling.ThrowOnError);
-
-            request.FolderIds.Add(folderId);
-            request.PropertySet = propertySet;
-
-            ServiceResponseCollection<GetFolderResponse> responses = request.Execute();
+            ServiceResponseCollection<GetFolderResponse> responses = this.InternalBindToFolders(
+                new[] { folderId },
+                propertySet,
+                ServiceErrorHandling.ThrowOnError
+            );
 
             return responses[0].Folder;
         }
@@ -306,6 +321,46 @@ namespace Microsoft.Exchange.WebServices.Data
                         result.GetType().Name,
                         typeof(TFolder).Name));
             }
+        }
+
+        /// <summary>
+        /// Binds to multiple folders in a single call to EWS.
+        /// </summary>
+        /// <param name="folderIds">The Ids of the folders to bind to.</param>
+        /// <param name="propertySet">The set of properties to load.</param>
+        /// <returns>A ServiceResponseCollection providing results for each of the specified folder Ids.</returns>
+        public ServiceResponseCollection<GetFolderResponse> BindToFolders(
+            IEnumerable<FolderId> folderIds,
+            PropertySet propertySet)
+        {
+            EwsUtilities.ValidateParamCollection(folderIds, "folderIds");
+            EwsUtilities.ValidateParam(propertySet, "propertySet");
+
+            return this.InternalBindToFolders(
+                folderIds,
+                propertySet,
+                ServiceErrorHandling.ReturnErrors
+            );
+        }
+
+        /// <summary>
+        /// Binds to multiple folders in a single call to EWS.
+        /// </summary>
+        /// <param name="folderIds">The Ids of the folders to bind to.</param>
+        /// <param name="propertySet">The set of properties to load.</param>
+        /// <param name="errorHandling">Type of error handling to perform.</param>
+        /// <returns>A ServiceResponseCollection providing results for each of the specified folder Ids.</returns>
+        private ServiceResponseCollection<GetFolderResponse> InternalBindToFolders(
+            IEnumerable<FolderId> folderIds,
+            PropertySet propertySet,
+            ServiceErrorHandling errorHandling)
+        {
+            GetFolderRequest request = new GetFolderRequest(this, errorHandling);
+
+            request.FolderIds.AddRange(folderIds);
+            request.PropertySet = propertySet;
+
+            return request.Execute();
         }
 
         /// <summary>
@@ -1235,17 +1290,20 @@ namespace Microsoft.Exchange.WebServices.Data
         /// </summary>
         /// <param name="itemIds">The Ids of the items to bind to.</param>
         /// <param name="propertySet">The set of properties to load.</param>
+        /// <param name="anchorMailbox">The SmtpAddress of mailbox that hosts all items we need to bind to</param>
         /// <param name="errorHandling">Type of error handling to perform.</param>
         /// <returns>A ServiceResponseCollection providing results for each of the specified item Ids.</returns>
         private ServiceResponseCollection<GetItemResponse> InternalBindToItems(
             IEnumerable<ItemId> itemIds,
             PropertySet propertySet,
+            string anchorMailbox,
             ServiceErrorHandling errorHandling)
         {
             GetItemRequest request = new GetItemRequest(this, errorHandling);
 
             request.ItemIds.AddRange(itemIds);
             request.PropertySet = propertySet;
+            request.AnchorMailbox = anchorMailbox;
 
             return request.Execute();
         }
@@ -1264,6 +1322,34 @@ namespace Microsoft.Exchange.WebServices.Data
             return this.InternalBindToItems(
                 itemIds,
                 propertySet,
+                null, /* anchorMailbox */
+                ServiceErrorHandling.ReturnErrors);
+        }
+
+        /// <summary>
+        /// Binds to multiple items in a single call to EWS.
+        /// </summary>
+        /// <param name="itemIds">The Ids of the items to bind to.</param>
+        /// <param name="propertySet">The set of properties to load.</param>
+        /// <param name="anchorMailbox">The SmtpAddress of mailbox that hosts all items we need to bind to</param>
+        /// <returns>A ServiceResponseCollection providing results for each of the specified item Ids.</returns>
+        /// <remarks>
+        /// This API designed to be used primarily in groups scenarios where we want to set the
+        /// anchor mailbox header so that request is routed directly to the group mailbox backend server.
+        /// </remarks>
+        public ServiceResponseCollection<GetItemResponse> BindToGroupItems(
+            IEnumerable<ItemId> itemIds,
+            PropertySet propertySet,
+            string anchorMailbox)
+        {
+            EwsUtilities.ValidateParamCollection(itemIds, "itemIds");
+            EwsUtilities.ValidateParam(propertySet, "propertySet");
+            EwsUtilities.ValidateParam(propertySet, "anchorMailbox");
+
+            return this.InternalBindToItems(
+                itemIds,
+                propertySet,
+                anchorMailbox,
                 ServiceErrorHandling.ReturnErrors);
         }
 
@@ -1281,6 +1367,7 @@ namespace Microsoft.Exchange.WebServices.Data
             ServiceResponseCollection<GetItemResponse> responses = this.InternalBindToItems(
                 new ItemId[] { itemId },
                 propertySet,
+                null, /* anchorMailbox */
                 ServiceErrorHandling.ThrowOnError);
 
             return responses[0].Item;
@@ -1445,6 +1532,255 @@ namespace Microsoft.Exchange.WebServices.Data
 
         #endregion
 
+        #region People operations
+
+        /// <summary>
+        /// This method is for search scenarios. Retrieves a set of personas satisfying the specified search conditions.
+        /// </summary>
+        /// <param name="folderId">Id of the folder being searched</param>
+        /// <param name="searchFilter">The search filter. Available search filter classes
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and 
+        /// SearchFilter.SearchFilterCollection</param>
+        /// <param name="view">The view which defines the number of persona being returned</param>
+        /// <param name="queryString">The query string for which the search is being performed</param>
+        /// <returns>A collection of personas matching the search conditions</returns>
+        public ICollection<Persona> FindPeople(FolderId folderId, SearchFilter searchFilter, ViewBase view, string queryString)
+        {
+            EwsUtilities.ValidateParamAllowNull(folderId, "folderId");
+            EwsUtilities.ValidateParamAllowNull(searchFilter, "searchFilter");
+            EwsUtilities.ValidateParam(view, "view");
+            EwsUtilities.ValidateParam(queryString, "queryString");
+            EwsUtilities.ValidateMethodVersion(this, ExchangeVersion.Exchange2013_SP1, "FindPeople");
+
+            FindPeopleRequest request = new FindPeopleRequest(this);
+
+            request.FolderId = folderId;
+            request.SearchFilter = searchFilter;
+            request.View = view;
+            request.QueryString = queryString;
+
+            return request.Execute().Personas;
+        }
+
+        /// <summary>
+        /// This method is for search scenarios. Retrieves a set of personas satisfying the specified search conditions.
+        /// </summary>
+        /// <param name="folderName">Name of the folder being searched</param>
+        /// <param name="searchFilter">The search filter. Available search filter classes
+        /// include SearchFilter.IsEqualTo, SearchFilter.ContainsSubstring and 
+        /// SearchFilter.SearchFilterCollection</param>
+        /// <param name="view">The view which defines the number of persona being returned</param>
+        /// <param name="queryString">The query string for which the search is being performed</param>
+        /// <returns>A collection of personas matching the search conditions</returns>
+        public ICollection<Persona> FindPeople(WellKnownFolderName folderName, SearchFilter searchFilter, ViewBase view, string queryString)
+        {
+            return this.FindPeople(new FolderId(folderName), searchFilter, view, queryString);
+        }
+
+        /// <summary>
+        /// This method is for browse scenarios. Retrieves a set of personas satisfying the specified browse conditions.
+        /// Browse scenariosdon't require query string.
+        /// </summary>
+        /// <param name="folderId">Id of the folder being browsed</param>
+        /// <param name="searchFilter">Search filter</param>
+        /// <param name="view">The view which defines paging and the number of persona being returned</param>
+        /// <returns>A result object containing resultset for browsing</returns>
+        public FindPeopleResults FindPeople(FolderId folderId, SearchFilter searchFilter, ViewBase view)
+        {
+            EwsUtilities.ValidateParamAllowNull(folderId, "folderId");
+            EwsUtilities.ValidateParamAllowNull(searchFilter, "searchFilter");
+            EwsUtilities.ValidateParamAllowNull(view, "view");
+            EwsUtilities.ValidateMethodVersion(this, ExchangeVersion.Exchange2013_SP1, "FindPeople");
+
+            FindPeopleRequest request = new FindPeopleRequest(this);
+
+            request.FolderId = folderId;
+            request.SearchFilter = searchFilter;
+            request.View = view;
+
+            return request.Execute().Results;
+        }
+
+        /// <summary>
+        /// This method is for browse scenarios. Retrieves a set of personas satisfying the specified browse conditions.
+        /// Browse scenarios don't require query string.
+        /// </summary>
+        /// <param name="folderName">Name of the folder being browsed</param>
+        /// <param name="searchFilter">Search filter</param>
+        /// <param name="view">The view which defines paging and the number of personas being returned</param>
+        /// <returns>A result object containing resultset for browsing</returns>
+        public FindPeopleResults FindPeople(WellKnownFolderName folderName, SearchFilter searchFilter, ViewBase view)
+        {
+            return this.FindPeople(new FolderId(folderName), searchFilter, view);
+        }
+
+        /// <summary>
+        /// Retrieves all people who are relevant to the user
+        /// </summary>
+        /// <param name="view">The view which defines the number of personas being returned</param>
+        /// <returns>A collection of personas matching the query string</returns>
+        public PeopleQueryResults BrowsePeople(ViewBase view)
+        {
+            return this.BrowsePeople(view, null);
+        }
+
+        /// <summary>
+        /// Retrieves all people who are relevant to the user
+        /// </summary>
+        /// <param name="view">The view which defines the number of personas being returned</param>
+        /// <param name="context">The context for this query. See PeopleQueryContextKeys for keys</param>
+        /// <returns>A collection of personas matching the query string</returns>
+        public PeopleQueryResults BrowsePeople(ViewBase view, Dictionary<string, string> context)
+        {
+            return this.PerformPeopleQuery(view, string.Empty, context, null);
+        }
+
+        /// <summary>
+        /// Searches for people who are relevant to the user, automatically determining
+        /// the best sources to use.
+        /// </summary>
+        /// <param name="view">The view which defines the number of personas being returned</param>
+        /// <param name="queryString">The query string for which the search is being performed</param>
+        /// <returns>A collection of personas matching the query string</returns>
+        public PeopleQueryResults SearchPeople(ViewBase view, string queryString)
+        {
+            return this.SearchPeople(view, queryString, null, null);
+        }
+
+        /// <summary>
+        /// Searches for people who are relevant to the user
+        /// </summary>
+        /// <param name="view">The view which defines the number of personas being returned</param>
+        /// <param name="queryString">The query string for which the search is being performed</param>
+        /// <param name="context">The context for this query. See PeopleQueryContextKeys for keys</param>
+        /// <param name="queryMode">The scope of the query.</param>
+        /// <returns>A collection of personas matching the query string</returns>
+        public PeopleQueryResults SearchPeople(ViewBase view, string queryString, Dictionary<string, string> context, PeopleQueryMode queryMode)
+        {
+            EwsUtilities.ValidateParam(queryString, "queryString");
+
+            return this.PerformPeopleQuery(view, queryString, context, queryMode);
+        }
+
+        /// <summary>
+        /// Performs a People Query FindPeople call
+        /// </summary>
+        /// <param name="view">The view which defines the number of personas being returned</param>
+        /// <param name="queryString">The query string for which the search is being performed</param>
+        /// <param name="context">The context for this query</param>
+        /// <param name="queryMode">The scope of the query.</param>
+        /// <returns></returns>
+        private PeopleQueryResults PerformPeopleQuery(ViewBase view, string queryString, Dictionary<string, string> context, PeopleQueryMode queryMode)
+        {
+            EwsUtilities.ValidateParam(view, "view");
+            EwsUtilities.ValidateMethodVersion(this, ExchangeVersion.Exchange2015, "FindPeople");
+
+            if (context == null)
+            {
+                context = new Dictionary<string, string>();
+            }
+
+            if (queryMode == null)
+            {
+                queryMode = PeopleQueryMode.Auto;
+            }
+
+            FindPeopleRequest request = new FindPeopleRequest(this);
+            request.View = view;
+            request.QueryString = queryString;
+            request.SearchPeopleSuggestionIndex = true;
+            request.Context = context;
+            request.QueryMode = queryMode;
+
+            FindPeopleResponse response = request.Execute();
+
+            PeopleQueryResults results = new PeopleQueryResults();
+            results.Personas = response.Personas.ToList();
+            results.TransactionId = response.TransactionId;
+
+            return results;
+        }
+
+        /// <summary>
+        /// Get a user's photo.
+        /// </summary>
+        /// <param name="emailAddress">The user's email address</param>
+        /// <param name="userPhotoSize">The desired size of the returned photo. Valid photo sizes are in UserPhotoSize</param>
+        /// <param name="entityTag">A photo's cache ID which will allow the caller to ensure their cached photo is up to date</param>
+        /// <returns>A result object containing the photo state</returns>
+        public GetUserPhotoResults GetUserPhoto(string emailAddress, string userPhotoSize, string entityTag)
+        {
+            EwsUtilities.ValidateParam(emailAddress, "emailAddress");
+            EwsUtilities.ValidateParam(userPhotoSize, "userPhotoSize");
+            EwsUtilities.ValidateParamAllowNull(entityTag, "entityTag");
+
+            GetUserPhotoRequest request = new GetUserPhotoRequest(this);
+
+            request.EmailAddress = emailAddress;
+            request.UserPhotoSize = userPhotoSize;
+            request.EntityTag = entityTag;
+
+            return request.Execute().Results;
+        }
+
+        /// <summary>
+        /// Begins an async request for a user photo
+        /// </summary>
+        /// <param name="callback">An AsyncCallback delegate</param>
+        /// <param name="state">An object that contains state information for this request</param>
+        /// <param name="emailAddress">The user's email address</param>
+        /// <param name="userPhotoSize">The desired size of the returned photo. Valid photo sizes are in UserPhotoSize</param>
+        /// <param name="entityTag">A photo's cache ID which will allow the caller to ensure their cached photo is up to date</param>
+        /// <returns>An IAsyncResult that references the asynchronous request.</returns>
+        public IAsyncResult BeginGetUserPhoto(
+            AsyncCallback callback,
+            object state, 
+            string emailAddress,
+            string userPhotoSize,
+            string entityTag)
+        {
+            EwsUtilities.ValidateParam(emailAddress, "emailAddress");
+            EwsUtilities.ValidateParam(userPhotoSize, "userPhotoSize");
+            EwsUtilities.ValidateParamAllowNull(entityTag, "entityTag");
+
+            GetUserPhotoRequest request = new GetUserPhotoRequest(this);
+
+            request.EmailAddress = emailAddress;
+            request.UserPhotoSize = userPhotoSize;
+            request.EntityTag = entityTag;
+
+            return request.BeginExecute(callback, state);
+        }
+
+        /// <summary>
+        /// Ends an async request for a user's photo
+        /// </summary>
+        /// <param name="asyncResult">An IAsyncResult that references the asynchronous request.</param>
+        /// <returns>A result object containing the photo state</returns>
+        public GetUserPhotoResults EndGetUserPhoto(IAsyncResult asyncResult)
+        {
+            GetUserPhotoRequest request = AsyncRequestResult.ExtractServiceRequest<GetUserPhotoRequest>(this, asyncResult);
+            return request.EndExecute(asyncResult).Results;
+        }
+
+        #endregion
+
+        #region PeopleInsights operations
+
+        /// <summary>
+        /// This method is for retreiving people insight for given email addresses
+        /// </summary>
+        /// <param name="emailAddresses">Specified eamiladdresses to retrieve</param>
+        /// <returns>The collection of Person objects containing the insight info</returns>
+        public Collection<Person> GetPeopleInsights(IEnumerable<string> emailAddresses)
+        {
+            GetPeopleInsightsRequest request = new GetPeopleInsightsRequest(this);
+            request.Emailaddresses.AddRange(emailAddresses);
+
+            return request.Execute().People;
+        }
+
+        #endregion
         #region Attachment operations
 
         /// <summary>
@@ -2052,6 +2388,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 null,
+                null, // AnchorMailbox
                 eventTypes).Execute()[0].Subscription;
         }
 
@@ -2083,6 +2420,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 null,
+                null, // AnchorMailbox
                 eventTypes).BeginExecute(callback, state);
         }
 
@@ -2111,6 +2449,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 null,
+                null, // AnchorMailbox
                 eventTypes).Execute()[0].Subscription;
         }
 
@@ -2143,6 +2482,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 null,
+                null, // AnchorMailbox
                 eventTypes).BeginExecute(callback, state);
         }
 
@@ -2172,6 +2512,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 callerData,
+                null, // AnchorMailbox
                 eventTypes).Execute()[0].Subscription;
         }
 
@@ -2205,6 +2546,69 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 callerData,
+                null, // AnchorMailbox
+                eventTypes).BeginExecute(callback, state);
+        }
+
+        /// <summary>
+        /// Subscribes to push notifications on a group mailbox. Calling this method results in a call to EWS.
+        /// </summary>
+        /// <param name="groupMailboxSmtp">The smtpaddress of the group mailbox to subscribe to.</param>
+        /// <param name="url">The URL of the Web Service endpoint the Exchange server should push events to.</param>
+        /// <param name="frequency">The frequency, in minutes, at which the Exchange server should contact the Web Service endpoint. Frequency must be between 1 and 1440.</param>
+        /// <param name="watermark">An optional watermark representing a previously opened subscription.</param>
+        /// <param name="callerData">Optional caller data that will be returned the call back.</param>
+        /// <param name="eventTypes">The event types to subscribe to.</param>
+        /// <returns>A PushSubscription representing the new subscription.</returns>
+        public PushSubscription SubscribeToGroupPushNotifications(
+            string groupMailboxSmtp,
+            Uri url,
+            int frequency,
+            string watermark,
+            string callerData,
+            params EventType[] eventTypes)
+        {
+            var folderIds = new FolderId[] { new FolderId(WellKnownFolderName.Inbox, new Mailbox(groupMailboxSmtp)) };
+            return this.BuildSubscribeToPushNotificationsRequest(
+                folderIds,
+                url,
+                frequency,
+                watermark,
+                callerData,
+                groupMailboxSmtp, // AnchorMailbox
+                eventTypes).Execute()[0].Subscription;
+        }
+
+        /// <summary>
+        /// Begins an asynchronous request to subscribe to push notifications. Calling this method results in a call to EWS.
+        /// </summary>
+        /// <param name="callback">The AsyncCallback delegate.</param>
+        /// <param name="state">An object that contains state information for this request.</param>
+        /// <param name="groupMailboxSmtp">The smtpaddress of the group mailbox to subscribe to.</param>
+        /// <param name="url">The URL of the Web Service endpoint the Exchange server should push events to.</param>
+        /// <param name="frequency">The frequency, in minutes, at which the Exchange server should contact the Web Service endpoint. Frequency must be between 1 and 1440.</param>
+        /// <param name="watermark">An optional watermark representing a previously opened subscription.</param>
+        /// <param name="callerData">Optional caller data that will be returned the call back.</param>
+        /// <param name="eventTypes">The event types to subscribe to.</param>
+        /// <returns>An IAsyncResult that references the asynchronous request.</returns>
+        public IAsyncResult BeginSubscribeToGroupPushNotifications(
+            AsyncCallback callback,
+            object state,
+            string groupMailboxSmtp,
+            Uri url,
+            int frequency,
+            string watermark,
+            string callerData,
+            params EventType[] eventTypes)
+        {
+            var folderIds = new FolderId[] { new FolderId(WellKnownFolderName.Inbox, new Mailbox(groupMailboxSmtp)) };
+            return this.BuildSubscribeToPushNotificationsRequest(
+                folderIds,
+                url,
+                frequency,
+                watermark,
+                callerData,
+                groupMailboxSmtp, // AnchorMailbox
                 eventTypes).BeginExecute(callback, state);
         }
 
@@ -2235,6 +2639,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 callerData,
+                null, // AnchorMailbox
                 eventTypes).Execute()[0].Subscription;
         }
 
@@ -2269,6 +2674,7 @@ namespace Microsoft.Exchange.WebServices.Data
                 frequency,
                 watermark,
                 callerData,
+                null, // AnchorMailbox
                 eventTypes).BeginExecute(callback, state);
         }
 
@@ -2278,6 +2684,18 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="asyncResult">An IAsyncResult that references the asynchronous request.</param>
         /// <returns>A PushSubscription representing the new subscription.</returns>
         public PushSubscription EndSubscribeToPushNotifications(IAsyncResult asyncResult)
+        {
+            var request = AsyncRequestResult.ExtractServiceRequest<SubscribeToPushNotificationsRequest>(this, asyncResult);
+
+            return request.EndExecute(asyncResult)[0].Subscription;
+        }
+
+        /// <summary>
+        /// Ends an asynchronous request to subscribe to push notifications in a group mailbox.
+        /// </summary>
+        /// <param name="asyncResult">An IAsyncResult that references the asynchronous request.</param>
+        /// <returns>A PushSubscription representing the new subscription.</returns>
+        public PushSubscription EndSubscribeToGroupPushNotifications(IAsyncResult asyncResult)
         {
             var request = AsyncRequestResult.ExtractServiceRequest<SubscribeToPushNotificationsRequest>(this, asyncResult);
 
@@ -2333,6 +2751,7 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="frequency">The frequency, in minutes, at which the Exchange server should contact the Web Service endpoint. Frequency must be between 1 and 1440.</param>
         /// <param name="watermark">An optional watermark representing a previously opened subscription.</param>
         /// <param name="callerData">Optional caller data that will be returned the call back.</param>
+        /// <param name="anchorMailbox">The smtpaddress of the mailbox to subscribe to.</param>
         /// <param name="eventTypes">The event types to subscribe to.</param>
         /// <returns>A request to request to subscribe to push notifications in the authenticated user's mailbox.</returns>
         private SubscribeToPushNotificationsRequest BuildSubscribeToPushNotificationsRequest(
@@ -2341,6 +2760,7 @@ namespace Microsoft.Exchange.WebServices.Data
             int frequency,
             string watermark,
             string callerData,
+            string anchorMailbox,
             EventType[] eventTypes)
         {
             EwsUtilities.ValidateParam(url, "url");
@@ -2353,6 +2773,7 @@ namespace Microsoft.Exchange.WebServices.Data
             EwsUtilities.ValidateParamCollection(eventTypes, "eventTypes");
 
             SubscribeToPushNotificationsRequest request = new SubscribeToPushNotificationsRequest(this);
+            request.AnchorMailbox = anchorMailbox;
 
             if (folderIds != null)
             {
@@ -2932,6 +3353,39 @@ namespace Microsoft.Exchange.WebServices.Data
         /// </summary>
         /// <param name="view">The view controlling the number of conversations returned.</param>
         /// <param name="folderId">The Id of the folder in which to search for conversations.</param>
+        /// <param name="anchorMailbox">The anchorMailbox Smtp address to route the request directly to group mailbox.</param>
+        /// <returns>Collection of conversations.</returns>
+        /// <remarks>
+        /// This API designed to be used primarily in groups scenarios where we want to set the
+        /// anchor mailbox header so that request is routed directly to the group mailbox backend server.
+        /// </remarks>
+        public Collection<Conversation> FindGroupConversation(
+            ViewBase view,
+            FolderId folderId,
+            string anchorMailbox)
+        {
+            EwsUtilities.ValidateParam(view, "view");
+            EwsUtilities.ValidateParam(folderId, "folderId");
+            EwsUtilities.ValidateParam(anchorMailbox, "anchorMailbox");
+            EwsUtilities.ValidateMethodVersion(
+                                            this,
+                                            ExchangeVersion.Exchange2015,
+                                            "FindConversation");
+
+            FindConversationRequest request = new FindConversationRequest(this);
+
+            request.View = view;
+            request.FolderId = new FolderIdWrapper(folderId);
+            request.AnchorMailbox = anchorMailbox;
+
+            return request.Execute().Conversations;
+        }
+
+        /// <summary>
+        /// Retrieves a collection of all Conversations in the specified Folder.
+        /// </summary>
+        /// <param name="view">The view controlling the number of conversations returned.</param>
+        /// <param name="folderId">The Id of the folder in which to search for conversations.</param>
         /// <param name="queryString">The query string for which the search is being performed</param>
         /// <returns>Collection of conversations.</returns>
         public ICollection<Conversation> FindConversation(ViewBase view, FolderId folderId, string queryString)
@@ -3024,6 +3478,7 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="foldersToIgnore">The folders to ignore.</param>
         /// <param name="sortOrder">Sort order of conversation tree nodes.</param>
         /// <param name="mailboxScope">The mailbox scope to reference.</param>
+        /// <param name="anchorMailbox">The smtpaddress of the mailbox that hosts the conversations</param>
         /// <param name="maxItemsToReturn">Maximum number of items to return.</param>
         /// <param name="errorHandling">What type of error handling should be performed.</param>
         /// <returns>GetConversationItems response.</returns>
@@ -3034,6 +3489,7 @@ namespace Microsoft.Exchange.WebServices.Data
                             ConversationSortOrder? sortOrder,
                             MailboxSearchLocation? mailboxScope,
                             int? maxItemsToReturn,
+                            string anchorMailbox,
                             ServiceErrorHandling errorHandling)
         {
             EwsUtilities.ValidateParam(conversations, "conversations");
@@ -3050,6 +3506,7 @@ namespace Microsoft.Exchange.WebServices.Data
             request.SortOrder = sortOrder;
             request.MailboxScope = mailboxScope;
             request.MaxItemsToReturn = maxItemsToReturn;
+            request.AnchorMailbox = anchorMailbox;
             request.Conversations = conversations.ToList();
 
             return request.Execute();
@@ -3076,6 +3533,7 @@ namespace Microsoft.Exchange.WebServices.Data
                                 null,               /* sortOrder */
                                 null,               /* mailboxScope */
                                 null,               /* maxItemsToReturn*/
+                                null, /* anchorMailbox */
                                 ServiceErrorHandling.ReturnErrors);
         }
 
@@ -3105,6 +3563,45 @@ namespace Microsoft.Exchange.WebServices.Data
                                 sortOrder,
                                 null,           /* mailboxScope */
                                 null,           /* maxItemsToReturn */
+                                null, /* anchorMailbox */
+                                ServiceErrorHandling.ThrowOnError)[0].Conversation;
+        }
+
+        /// <summary>
+        /// Gets the items for a conversation.
+        /// </summary>
+        /// <param name="conversationId">The conversation id.</param>
+        /// <param name="propertySet">The set of properties to load.</param>
+        /// <param name="syncState">The optional sync state representing the point in time when to start the synchronization.</param>
+        /// <param name="foldersToIgnore">The folders to ignore.</param>
+        /// <param name="sortOrder">Conversation item sort order.</param>
+        /// <param name="anchorMailbox">The smtp address of the mailbox hosting the conversations</param>
+        /// <returns>ConversationResponseType response.</returns>
+        /// <remarks>
+        /// This API designed to be used primarily in groups scenarios where we want to set the
+        /// anchor mailbox header so that request is routed directly to the group mailbox backend server.
+        /// </remarks>
+        public ConversationResponse GetGroupConversationItems(
+                                                ConversationId conversationId,
+                                                PropertySet propertySet,
+                                                string syncState,
+                                                IEnumerable<FolderId> foldersToIgnore,
+                                                ConversationSortOrder? sortOrder,
+                                                string anchorMailbox)
+        {
+            EwsUtilities.ValidateParam(anchorMailbox, "anchorMailbox");
+
+            List<ConversationRequest> conversations = new List<ConversationRequest>();
+            conversations.Add(new ConversationRequest(conversationId, syncState));
+
+            return this.InternalGetConversationItems(
+                                conversations,
+                                propertySet,
+                                foldersToIgnore,
+                                sortOrder,
+                                null,           /* mailboxScope */
+                                null,           /* maxItemsToReturn */
+                                anchorMailbox, /* anchorMailbox */
                                 ServiceErrorHandling.ThrowOnError)[0].Conversation;
         }
 
@@ -3131,6 +3628,7 @@ namespace Microsoft.Exchange.WebServices.Data
                                 null,               /* sortOrder */
                                 mailboxScope,
                                 null,               /* maxItemsToReturn*/
+                                null, /* anchorMailbox */
                                 ServiceErrorHandling.ReturnErrors);
         }
 
@@ -4697,6 +5195,22 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
+        /// Sets the consent state of an extension.
+        /// </summary>
+        /// <param name="id">Extension id.</param>
+        /// <param name="state">Sets the consent state of an extension.</param>
+        /// <remarks>Exception will be thrown for errors. </remarks>
+        public void RegisterConsent(string id, ConsentState state)
+        {
+            EwsUtilities.ValidateParam(id, "id");
+            EwsUtilities.ValidateParam(state, "state");
+
+            RegisterConsentRequest request = new RegisterConsentRequest(this, id, state);
+
+            request.Execute();
+        }
+
+        /// <summary>
         /// Get App Marketplace Url.
         /// </summary>
         /// <remarks>Exception will be thrown for errors. </remarks>
@@ -4791,6 +5305,28 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
+        /// Get the OME (i.e. Office Message Encryption) configuration data. This method is used in server-to-server calls to retrieve OME configuration
+        /// </summary>
+        /// <returns>OME Configuration response object</returns>
+        public GetOMEConfigurationResponse GetOMEConfiguration()
+        {
+            GetOMEConfigurationRequest request = new GetOMEConfigurationRequest(this);
+
+            return request.Execute();
+        }
+
+        /// <summary>
+        /// Set the OME (i.e. Office Message Encryption) configuration data. This method is used in server-to-server calls to set encryption configuration
+        /// </summary>
+        /// <param name="xml">The xml</param>
+        public void SetOMEConfiguration(string xml)
+        {
+            SetOMEConfigurationRequest request = new SetOMEConfigurationRequest(this, xml);
+
+            request.Execute();
+        }
+
+        /// <summary>
         /// Set the client extension data. This method is used in server-to-server calls to install/uninstall/configure ORG
         /// extensions to support admin's management of ORG extensions via powershell/UMC.
         /// </summary>
@@ -4798,6 +5334,93 @@ namespace Microsoft.Exchange.WebServices.Data
         public void SetClientExtension(List<SetClientExtensionAction> actions)
         {
             SetClientExtensionRequest request = new SetClientExtensionRequest(this, actions);
+
+            request.Execute();
+        }
+
+        #endregion
+
+        #region Groups
+        /// <summary>
+        /// Gets the list of unified groups associated with the user
+        /// </summary>
+        /// <param name="requestedUnifiedGroupsSets">The Requested Unified Groups Sets</param>
+        /// <param name="userSmtpAddress">The smtp address of accessing user.</param>
+        /// <returns>UserUnified groups.</returns>
+        public Collection<UnifiedGroupsSet> GetUserUnifiedGroups(
+                            IEnumerable<RequestedUnifiedGroupsSet> requestedUnifiedGroupsSets,
+                            string userSmtpAddress)
+        {
+            EwsUtilities.ValidateParam(requestedUnifiedGroupsSets, "requestedUnifiedGroupsSets");
+            EwsUtilities.ValidateParam(userSmtpAddress, "userSmtpAddress");
+
+            return this.GetUserUnifiedGroupsInternal(requestedUnifiedGroupsSets, userSmtpAddress);
+        }
+
+        /// <summary>
+        /// Gets the list of unified groups associated with the user
+        /// </summary>
+        /// <param name="requestedUnifiedGroupsSets">The Requested Unified Groups Sets</param>
+        /// <returns>UserUnified groups.</returns>
+        public Collection<UnifiedGroupsSet> GetUserUnifiedGroups(IEnumerable<RequestedUnifiedGroupsSet> requestedUnifiedGroupsSets)
+        {
+            EwsUtilities.ValidateParam(requestedUnifiedGroupsSets, "requestedUnifiedGroupsSets");
+            return this.GetUserUnifiedGroupsInternal(requestedUnifiedGroupsSets, null);
+        }
+
+        /// <summary>
+        /// Gets the list of unified groups associated with the user
+        /// </summary>
+        /// <param name="requestedUnifiedGroupsSets">The Requested Unified Groups Sets</param>
+        /// <param name="userSmtpAddress">The smtp address of accessing user.</param>
+        /// <returns>UserUnified groups.</returns>
+        private Collection<UnifiedGroupsSet> GetUserUnifiedGroupsInternal(
+                            IEnumerable<RequestedUnifiedGroupsSet> requestedUnifiedGroupsSets,
+                            string userSmtpAddress)
+        {
+            GetUserUnifiedGroupsRequest request = new GetUserUnifiedGroupsRequest(this);
+
+            if (!string.IsNullOrEmpty(userSmtpAddress))
+            {
+                request.UserSmtpAddress = userSmtpAddress;
+            }
+
+            if (requestedUnifiedGroupsSets != null)
+            {
+                request.RequestedUnifiedGroupsSets = requestedUnifiedGroupsSets;
+            }
+
+            return request.Execute().GroupsSets;
+        }
+
+        /// <summary>
+        /// Gets the UnifiedGroupsUnseenCount for the group specfied 
+        /// </summary>
+        /// <param name="groupMailboxSmtpAddress">The smtpaddress of group for which unseendata is desired</param>
+        /// <param name="lastVisitedTimeUtc">The LastVisitedTimeUtc of group for which unseendata is desired</param>
+        /// <returns>UnifiedGroupsUnseenCount</returns>
+        public int GetUnifiedGroupUnseenCount(string groupMailboxSmtpAddress, DateTime lastVisitedTimeUtc)
+        {
+            EwsUtilities.ValidateParam(groupMailboxSmtpAddress, "groupMailboxSmtpAddress");
+
+            GetUnifiedGroupUnseenCountRequest request = new GetUnifiedGroupUnseenCountRequest(
+                this, lastVisitedTimeUtc, UnifiedGroupIdentityType.SmtpAddress, groupMailboxSmtpAddress);
+            
+            request.AnchorMailbox = groupMailboxSmtpAddress;
+
+            return request.Execute().UnseenCount;
+        }
+
+        /// <summary>
+        /// Sets the LastVisitedTime for the group specfied 
+        /// </summary>
+        /// <param name="groupMailboxSmtpAddress">The smtpaddress of group for which unseendata is desired</param>
+        /// <param name="lastVisitedTimeUtc">The LastVisitedTimeUtc of group for which unseendata is desired</param>
+        public void SetUnifiedGroupLastVisitedTime(string groupMailboxSmtpAddress, DateTime lastVisitedTimeUtc)
+        {
+            EwsUtilities.ValidateParam(groupMailboxSmtpAddress, "groupMailboxSmtpAddress");
+
+            SetUnifiedGroupLastVisitedTimeRequest request = new SetUnifiedGroupLastVisitedTimeRequest(this, lastVisitedTimeUtc, UnifiedGroupIdentityType.SmtpAddress, groupMailboxSmtpAddress);
 
             request.Execute();
         }
@@ -5033,16 +5656,7 @@ namespace Microsoft.Exchange.WebServices.Data
             Uri endpoint = this.Url;
             this.RegisterCustomBasicAuthModule();
 
-            if (this.RenderingMethod == RenderingMode.JSON)
-            {
-                endpoint = new Uri(
-                    endpoint,
-                    String.Format("{0}/{1}{2}", endpoint.AbsolutePath, methodName, endpoint.Query));
-            }
-            else 
-            {
-                endpoint = this.AdjustServiceUriFromCredentials(endpoint);
-            }
+            endpoint = this.AdjustServiceUriFromCredentials(endpoint);
 
             IEwsHttpWebRequest request = this.PrepareHttpWebRequestForUrl(
                 endpoint,
@@ -5063,20 +5677,8 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="request">The request.</param>
         internal override void SetContentType(IEwsHttpWebRequest request)
         {
-            if (this.renderingMode == RenderingMode.Xml)
-            {
-                request.ContentType = "text/xml; charset=utf-8";
-                request.Accept = "text/xml";
-            }
-            else if (this.renderingMode == RenderingMode.JSON)
-            {
-                request.ContentType = "application/json; charset=utf-8";
-                request.Accept = "application/json";
-            }
-            else
-            {
-                base.SetContentType(request);
-            }
+            request.ContentType = "text/xml; charset=utf-8";
+            request.Accept = "text/xml";
         }
 
         /// <summary>
@@ -5214,15 +5816,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Gets or sets the method by which the service will serialize the request.
-        /// </summary>
-        internal ExchangeService.RenderingMode RenderingMethod
-        {
-            get { return this.renderingMode; }
-            set { this.renderingMode = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether trace output is pretty printed.
         /// </summary>
         public bool TraceEnablePrettyPrinting
@@ -5248,24 +5841,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
         }
 
-        #endregion
-
-        #region Private enums
-        /// <summary>
-        /// The rendering method.
-        /// </summary>
-        public enum RenderingMode
-        {
-            /// <summary>
-            /// XML
-            /// </summary>
-            Xml,
-
-            /// <summary>
-            /// Javascript Object Notation
-            /// </summary>
-            JSON
-        }
         #endregion
     }
 }

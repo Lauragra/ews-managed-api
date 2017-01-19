@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="SearchableMailbox.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the SearchableMailbox class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -75,53 +90,6 @@ namespace Microsoft.Exchange.WebServices.Data
             bool.TryParse(reader.ReadElementValue(XmlNamespace.Types, XmlElementNames.IsMembershipGroup), out isMembershipGroup);
             searchableMailbox.IsMembershipGroup = isMembershipGroup;
             searchableMailbox.ReferenceId = reader.ReadElementValue(XmlNamespace.Types, XmlElementNames.ReferenceId);
-
-            return searchableMailbox;
-        }
-
-        /// <summary>
-        /// Load from json
-        /// </summary>
-        /// <param name="jsonObject">The json object</param>
-        /// <returns>Searchable mailbox object</returns>
-        internal static SearchableMailbox LoadFromJson(JsonObject jsonObject)
-        {
-            SearchableMailbox searchableMailbox = new SearchableMailbox();
-
-            if (jsonObject.ContainsKey(XmlElementNames.Guid))
-            {
-                searchableMailbox.Guid = new Guid(jsonObject.ReadAsString(XmlElementNames.Guid));
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.DisplayName))
-            {
-                searchableMailbox.DisplayName = jsonObject.ReadAsString(XmlElementNames.DisplayName);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.PrimarySmtpAddress))
-            {
-                searchableMailbox.SmtpAddress = jsonObject.ReadAsString(XmlElementNames.PrimarySmtpAddress);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.IsExternalMailbox))
-            {
-                searchableMailbox.IsExternalMailbox = jsonObject.ReadAsBool(XmlElementNames.IsExternalMailbox);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.ExternalEmailAddress))
-            {
-                searchableMailbox.ExternalEmailAddress = jsonObject.ReadAsString(XmlElementNames.ExternalEmailAddress);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.IsMembershipGroup))
-            {
-                searchableMailbox.IsMembershipGroup = jsonObject.ReadAsBool(XmlElementNames.IsMembershipGroup);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.ReferenceId))
-            {
-                searchableMailbox.ReferenceId = jsonObject.ReadAsString(XmlElementNames.ReferenceId);
-            }
 
             return searchableMailbox;
         }

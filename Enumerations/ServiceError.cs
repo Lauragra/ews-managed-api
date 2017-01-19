@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="ServiceError.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ServiceError enumeration.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -2287,6 +2302,72 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <summary>
         /// Receive quota message per folder is exceeded.
         /// </summary>
-        ErrorMessagePerFolderCountReceiveQuotaExceeded
+        ErrorMessagePerFolderCountReceiveQuotaExceeded,
+
+        /// <summary>
+        /// Unified group was not found.
+        /// </summary>
+        ErrorUnifiedGroupMailboxNotFound,
+
+        /// <summary>
+        /// Invalid channel id.
+        /// </summary>
+        ErrorInvalidChannelId,
+
+        /// <summary>
+        /// Another connection is opened on the same channel.
+        /// </summary>
+        ErrorNewChannelConnectionOpened,
+
+        /// <summary>
+        /// The channel subscription cannot be found.
+        /// </summary>
+        ErrorChannelSubscriptionNotFound,
+
+        /// <summary>
+        /// The channel contains too many subscriptions.
+        /// </summary>
+        ErrorExceededChannelSubscriptionCount,
+
+        /// <summary>
+        /// The channel subscription already exists.
+        /// </summary>
+        ErrorChannelSubscriptionAlreadyExists,
+
+        /// <summary>
+        /// The given channel subscription id is invalid.
+        /// </summary>
+        ErrorInvalidChannelSubscriptionId,
+
+        #region Error codes to map WASCL errors
+
+        /// <summary>Error indicating that message submission blocked by WASCL for a consumer mailboxes</summary>
+        ErrorMessageSubmissionBlocked,
+
+        /// <summary>Error indicating that number of submitted messages exceeded the limit and message submission is blocked by WASCL</summary>
+        ErrorExceededMessageLimit,
+
+        /// <summary>Error indicating that recipients number for a consumer mailbox has exceeded the limit defined by WASCL</summary>
+        ErrorExceededMaxRecipientLimitBlock,
+
+        /// <summary>Error indicating that access to the consumer mailbox is suspended by WASCL</summary>
+        ErrorAccountSuspend,
+
+        /// <summary>Error indicating that recipients number for a consumer mailbox has exceeded the limit defined by WASCL</summary>
+        ErrorExceededMaxRecipientLimit,
+
+        /// <summary>Error indicating that particular message cannot be sent for a consumer mailbox as it is considered as SPAM by WASCL</summary>
+        ErrorMessageBlocked,
+
+        /// <summary>Error indicating that access to the consumer mailbox is suspended by WASCL</summary>
+        ErrorAccountSuspendShowTierUpgrade,
+
+        /// <summary>Error indicating that message sent from a consumer mailbox has exceeded the limit defined by WASCL</summary>
+        ErrorExceededMessageLimitShowTierUpgrade,
+
+        /// <summary>Error indicating that recipients number for a consumer mailbox has exceeded the limit defined by WASCL</summary>
+        ErrorExceededMaxRecipientLimitShowTierUpgrade,
+
+        #endregion
     }
 }

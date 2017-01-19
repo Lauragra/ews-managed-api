@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="EmailMessageSchema.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the EmailMessageSchema class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -41,6 +56,7 @@ namespace Microsoft.Exchange.WebServices.Data
             public const string ReceivedRepresenting = "message:ReceivedRepresenting";
             public const string ApprovalRequestData = "message:ApprovalRequestData";
             public const string VotingInformation = "message:VotingInformation";
+            public const string Likers = "message:Likers";
         }
 
         /// <summary>
@@ -254,6 +270,18 @@ namespace Microsoft.Exchange.WebServices.Data
                 ExchangeVersion.Exchange2013,
                 delegate() { return new VotingInformation(); });
 
+        /// <summary>
+        /// Defines the Likers property
+        /// </summary>
+        [SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "Immutable type")]
+        public static readonly PropertyDefinition Likers =
+            new ComplexPropertyDefinition<EmailAddressCollection>(
+                XmlElementNames.Likers,
+                FieldUris.Likers,
+                PropertyDefinitionFlags.AutoInstantiateOnRead,
+                ExchangeVersion.Exchange2015,
+                delegate() { return new EmailAddressCollection(); });
+
         // This must be after the declaration of property definitions
         internal static new readonly EmailMessageSchema Instance = new EmailMessageSchema();
 
@@ -285,6 +313,7 @@ namespace Microsoft.Exchange.WebServices.Data
             this.RegisterProperty(ReceivedRepresenting);
             this.RegisterProperty(ApprovalRequestData);
             this.RegisterProperty(VotingInformation);
+            this.RegisterProperty(Likers);
         }
 
         /// <summary>

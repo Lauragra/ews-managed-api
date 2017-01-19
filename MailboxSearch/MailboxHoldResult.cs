@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="MailboxHoldResult.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the MailboxHoldResult class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -96,57 +111,6 @@ namespace Microsoft.Exchange.WebServices.Data
                 }
             }
             while (!reader.IsEndElement(XmlNamespace.Messages, XmlElementNames.MailboxHoldResult));
-
-            holdResult.Statuses = statuses.Count == 0 ? null : statuses.ToArray();
-
-            return holdResult;
-        }
-
-        /// <summary>
-        /// Load from json
-        /// </summary>
-        /// <param name="jsonObject">The json object</param>
-        /// <returns>Mailbox hold object</returns>
-        internal static MailboxHoldResult LoadFromJson(JsonObject jsonObject)
-        {
-            List<MailboxHoldStatus> statuses = new List<MailboxHoldStatus>();
-            MailboxHoldResult holdResult = new MailboxHoldResult();
-
-            if (jsonObject.ContainsKey(XmlElementNames.HoldId))
-            {
-                holdResult.HoldId = jsonObject.ReadAsString(XmlElementNames.HoldId);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.Query))
-            {
-                holdResult.Query = jsonObject.ReadAsString(XmlElementNames.Query);
-            }
-
-            if (jsonObject.ContainsKey(XmlElementNames.Statuses))
-            {
-                foreach (object statusObject in jsonObject.ReadAsArray(XmlElementNames.Statuses))
-                {
-                    MailboxHoldStatus status = new MailboxHoldStatus();
-                    JsonObject jsonStatus = statusObject as JsonObject;
-
-                    if (jsonStatus.ContainsKey(XmlElementNames.Mailbox))
-                    {
-                        status.Mailbox = jsonStatus.ReadAsString(XmlElementNames.Mailbox);
-                    }
-
-                    if (jsonStatus.ContainsKey(XmlElementNames.Status))
-                    {
-                        status.Status = (HoldStatus)Enum.Parse(typeof(HoldStatus), jsonStatus.ReadAsString(XmlElementNames.Status));
-                    }
-
-                    if (jsonStatus.ContainsKey(XmlElementNames.AdditionalInfo))
-                    {
-                        status.AdditionalInfo = jsonStatus.ReadAsString(XmlElementNames.AdditionalInfo);
-                    }
-
-                    statuses.Add(status);
-                }
-            }
 
             holdResult.Statuses = statuses.Count == 0 ? null : statuses.ToArray();
 

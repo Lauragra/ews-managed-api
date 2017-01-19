@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="XmlElementNames.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the XmlElementNames class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -22,6 +37,7 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string ItemIds = "ItemIds";
         public const string FolderId = "FolderId";
         public const string FolderIds = "FolderIds";
+        public const string SourceId = "SourceId";
         public const string OccurrenceItemId = "OccurrenceItemId";
         public const string RecurringMasterItemId = "RecurringMasterItemId";
         public const string ItemShape = "ItemShape";
@@ -84,8 +100,11 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string IsAssociated = "IsAssociated";
         public const string IsDraft = "IsDraft";
         public const string IsFromMe = "IsFromMe";
+        public const string IsHidden = "IsHidden";
+        public const string IsQuickContact = "IsQuickContact";
         public const string IsResend = "IsResend";
         public const string IsUnmodified = "IsUnmodified";
+        public const string IsWritable = "IsWritable";
         public const string InternetMessageHeader = "InternetMessageHeader";
         public const string InternetMessageHeaders = "InternetMessageHeaders";
         public const string DateTimeSent = "DateTimeSent";
@@ -101,6 +120,14 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string Culture = "Culture";
         public const string FileAttachment = "FileAttachment";
         public const string ItemAttachment = "ItemAttachment";
+        public const string ReferenceAttachment = "ReferenceAttachment";
+        public const string AttachLongPathName = "AttachLongPathName";
+        public const string ProviderType = "ProviderType";
+        public const string ProviderEndpointUrl = "ProviderEndpointUrl";
+        public const string AttachmentThumbnailUrl = "AttachmentThumbnailUrl";
+        public const string AttachmentPreviewUrl = "AttachmentPreviewUrl";
+        public const string PermissionType = "PermissionType";
+        public const string AttachmentIsFolder = "AttachmentIsFolder";
         public const string AttachmentIds = "AttachmentIds";
         public const string AttachmentId = "AttachmentId";
         public const string ContentType = "ContentType";
@@ -612,6 +639,7 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string UserOptions = "UserOptions";
         public const string VotingResponse = "VotingResponse";
         public const string NumberOfDays = "NumberOfDays";
+        public const string AcceptanceState = "AcceptanceState";
 
         public const string NlgEntityExtractionResult = "EntityExtractionResult";
         public const string NlgAddresses = "Addresses";
@@ -662,6 +690,184 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string MarkAsJunkResponse = "MarkAsJunkResponse";
         public const string MarkAsJunkResponseMessage = "MarkAsJunkResponseMessage";
         public const string MovedItemId = "MovedItemId";
+
+        #region Persona
+
+        public const string CreationTime = "CreationTime";
+        public const string People = "People";
+        public const string Persona = "Persona";
+        public const string PersonaId = "PersonaId";
+        public const string PersonaShape = "PersonaShape";
+        public const string RelevanceScore = "RelevanceScore";
+        public const string TotalNumberOfPeopleInView = "TotalNumberOfPeopleInView";
+        public const string FirstMatchingRowIndex = "FirstMatchingRowIndex";
+        public const string FirstLoadedRowIndex = "FirstLoadedRowIndex";
+        public const string YomiCompanyName = "YomiCompanyName";
+        public const string Emails1 = "Emails1";
+        public const string Emails2 = "Emails2";
+        public const string Emails3 = "Emails3";
+        public const string HomeAddresses = "HomeAddresses";
+        public const string BusinessAddresses = "BusinessAddresses";
+        public const string OtherAddresses = "OtherAddresses";
+        public const string BusinessPhoneNumbers = "BusinessPhoneNumbers";
+        public const string BusinessPhoneNumbers2 = "BusinessPhoneNumbers2";
+        public const string AssistantPhoneNumbers = "AssistantPhoneNumbers";
+        public const string TTYTDDPhoneNumbers = "TTYTDDPhoneNumbers";
+        public const string HomePhones = "HomePhones";
+        public const string HomePhones2 = "HomePhones2";
+        public const string MobilePhones = "MobilePhones";
+        public const string MobilePhones2 = "MobilePhones2";
+        public const string CallbackPhones = "CallbackPhones";
+        public const string CarPhones = "CarPhones";
+        public const string HomeFaxes = "HomeFaxes";
+        public const string OrganizationMainPhones = "OrganizationMainPhones";
+        public const string OtherFaxes = "OtherFaxes";
+        public const string OtherTelephones = "OtherTelephones";
+        public const string OtherPhones2 = "OtherPhones2";
+        public const string Pagers = "Pagers";
+        public const string RadioPhones = "RadioPhones";
+        public const string TelexNumbers = "TelexNumbers";
+        public const string WorkFaxes = "WorkFaxes";
+        public const string FileAses = "FileAses";
+        public const string CompanyNames = "CompanyNames";
+        public const string DisplayNames = "DisplayNames";
+        public const string DisplayNamePrefixes = "DisplayNamePrefixes";
+        public const string GivenNames = "GivenNames";
+        public const string MiddleNames = "MiddleNames";
+        public const string Surnames = "Surnames";
+        public const string Generations = "Generations";
+        public const string Nicknames = "Nicknames";
+        public const string YomiCompanyNames = "YomiCompanyNames";
+        public const string YomiFirstNames = "YomiFirstNames";
+        public const string YomiLastNames = "YomiLastNames";
+        public const string Managers = "Managers";
+        public const string AssistantNames = "AssistantNames";
+        public const string Professions = "Professions";
+        public const string SpouseNames = "SpouseNames";
+        public const string Departments = "Departments";
+        public const string Titles = "Titles";
+        public const string ImAddresses2 = "ImAddresses2";
+        public const string ImAddresses3 = "ImAddresses3";
+        public const string DisplayNamePrefix = "DisplayNamePrefix";
+        public const string DisplayNameFirstLast = "DisplayNameFirstLast";
+        public const string DisplayNameLastFirst = "DisplayNameLastFirst";
+        public const string DisplayNameFirstLastHeader = "DisplayNameFirstLastHeader";
+        public const string DisplayNameLastFirstHeader = "DisplayNameLastFirstHeader";
+        public const string IsFavorite = "IsFavorite";
+        public const string Schools = "Schools";
+        public const string Hobbies = "Hobbies";
+        public const string Locations = "Locations";
+        public const string OfficeLocations = "OfficeLocations";
+        public const string BusinessHomePages = "BusinessHomePages";
+        public const string PersonalHomePages = "PersonalHomePages";
+        public const string ThirdPartyPhotoUrls = "ThirdPartyPhotoUrls";
+        public const string Attribution = "Attribution";
+        public const string Attributions = "Attributions";
+        public const string StringAttributedValue = "StringAttributedValue";
+        public const string DisplayNameFirstLastSortKey = "DisplayNameFirstLastSortKey";
+        public const string DisplayNameLastFirstSortKey = "DisplayNameLastFirstSortKey";
+        public const string CompanyNameSortKey = "CompanyNameSortKey";
+        public const string HomeCitySortKey = "HomeCitySortKey";
+        public const string WorkCitySortKey = "WorkCitySortKey";
+        public const string FileAsId = "FileAsId";
+        public const string FileAsIds = "FileAsIds";
+        public const string HomeCity = "HomeCity";
+        public const string WorkCity = "WorkCity";
+        public const string PersonaType = "PersonaType";
+        public const string Birthdays = "Birthdays";
+        public const string BirthdaysLocal = "BirthdaysLocal";
+        public const string WeddingAnniversaries = "WeddingAnniversaries";
+        public const string WeddingAnniversariesLocal = "WeddingAnniversariesLocal";
+        public const string OriginalDisplayName = "OriginalDisplayName";
+
+        #endregion
+
+        #region People Insights
+        public const string Person = "Person";
+        public const string Insights = "Insights";
+        public const string Insight = "Insight";
+        public const string InsightType = "InsightType";
+        public const string InsightSourceType = "InsightSourceType";
+        public const string InsightValue = "InsightValue";
+        public const string InsightSource = "InsightSource";
+        public const string UpdatedUtcTicks = "UpdatedUtcTicks";
+        public const string StringInsightValue = "StringInsightValue";
+        public const string ProfileInsightValue = "ProfileInsightValue";
+        public const string JobInsightValue = "JobInsightValue";
+        public const string OutOfOfficeInsightValue = "OutOfOfficeInsightValue";
+        public const string UserProfilePicture = "UserProfilePicture";
+        public const string EducationInsightValue = "EducationInsightValue";
+        public const string SkillInsightValue = "SkillInsightValue";
+        public const string MeetingInsightValue = "MeetingInsightValue";
+        public const string Attendees = "Attendees";
+        public const string EmailInsightValue = "EmailInsightValue";
+        public const string ThreadId = "ThreadId";
+        public const string LastEmailDateUtcTicks = "LastEmailDateUtcTicks";
+        public const string LastEmailSender = "LastEmailSender";
+        public const string EmailsCount = "EmailsCount";
+        public const string DelveDocument = "DelveDocument";
+        public const string CompanyInsightValue = "CompanyInsightValue";
+        public const string ArrayOfInsightValue = "ArrayOfInsightValue";
+        public const string InsightContent = "InsightContent";
+        public const string SingleValueInsightContent = "SingleValueInsightContent";
+        public const string MultiValueInsightContent = "MultiValueInsightContent";
+        public const string ArrayOfInsight = "ArrayOfInsight";
+        public const string PersonType = "PersonType";
+        public const string SatoriId = "SatoriId";
+        public const string DescriptionAttribution = "DescriptionAttribution";
+        public const string ImageUrl = "ImageUrl";
+        public const string ImageUrlAttribution = "ImageUrlAttribution";
+        public const string YearFound = "YearFound";
+        public const string FinanceSymbol = "FinanceSymbol";
+        public const string WebsiteUrl = "WebsiteUrl";
+        public const string Rank = "Rank";
+        public const string Author = "Author";
+        public const string Created = "Created";
+        public const string DefaultEncodingURL = "DefaultEncodingURL";
+        public const string FileType = "FileType";
+        public const string Data = "Data";
+        public const string ItemList = "ItemList";
+        public const string Avatar = "Avatar";
+        public const string JoinedUtcTicks = "JoinedUtcTicks";
+        public const string Company = "Company";
+        public const string StartUtcTicks = "StartUtcTicks";
+        public const string EndUtcTicks = "EndUtcTicks";
+        public const string Blob = "Blob";
+        public const string PhotoSize = "PhotoSize";
+        public const string Institute = "Institute";
+        public const string Degree = "Degree";
+        public const string Strength = "Strength";
+        public const string ComputedInsightValueProperty = "ComputedInsightValueProperty";
+        public const string ComputedInsightValue = "ComputedInsightValue";
+        public const string Properties = "Properties";
+        public const string Property = "Property";
+        public const string Key = "Key";
+        public const string SMSNumber = "SMSNumber";
+        public const string FacebookProfileLink = "FacebookProfileLink";
+        public const string LinkedInProfileLink = "LinkedInProfileLink";
+        public const string ProfessionalBiography = "ProfessionalBiography";
+        public const string TeamSize = "TeamSize";
+        public const string Hometown = "Hometown";
+        public const string CurrentLocation = "CurrentLocation";
+        public const string Office = "Office";
+        public const string Headline = "Headline";
+        public const string ManagementChain = "ManagementChain";
+        public const string Peers = "Peers";
+        public const string MutualConnections = "MutualConnections";
+        public const string MutualManager = "MutualManager";
+        public const string Skills = "Skills";
+        public const string JobInsight = "JobInsight";
+        public const string CurrentJob = "CurrentJob";
+        public const string CompanyProfile = "CompanyProfile";
+        public const string CompanyInsight = "CompanyInsight";
+        public const string Text = "Text";
+        public const string ImageType = "ImageType";
+        public const string DocumentId = "DocumentId";
+        public const string PreviewURL = "PreviewURL";
+        public const string LastEditor = "LastEditor";
+        public const string ProfilePicture = "ProfilePicture";
+
+        #endregion
 
         #region Conversations
 
@@ -973,6 +1179,14 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string DirectReports = "DirectReports";
         #endregion
 
+        #region Photos
+
+        public const string SizeRequested = "SizeRequested";
+        public const string HasChanged = "HasChanged";
+        public const string PictureData = "PictureData";
+
+        #endregion
+
         #region Request/response element names
         public const string ResponseMessage = "ResponseMessage";
         public const string ResponseMessages = "ResponseMessages";
@@ -1077,6 +1291,26 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string MarkAllItemsAsRead = "MarkAllItemsAsRead";
         public const string MarkAllItemsAsReadResponse = "MarkAllItemsAsReadResponse";
         public const string MarkAllItemsAsReadResponseMessage = "MarkAllItemsAsReadResponseMessage";
+
+        // FindPeople
+        public const string FindPeople = "FindPeople";
+        public const string FindPeopleResponse = "FindPeopleResponse";
+        public const string FindPeopleResponseMessage = "FindPeopleResponseMessage";
+        public const string SearchPeopleSuggestionIndex = "SearchPeopleSuggestionIndex";
+        public const string SearchPeopleContext = "Context";
+        public const string SearchPeopleQuerySources = "QuerySources";
+        public const string FindPeopleTransactionId = "TransactionId";
+        public const string FindPeopleSources = "Sources";
+
+        // GetPeopleInsights
+        public const string GetPeopleInsights = "GetPeopleInsights";
+        public const string GetPeopleInsightsResponse = "GetPeopleInsightsResponse";
+        public const string GetPeopleInsightsResponseMessage = "GetPeopleInsightsResponseMessage";
+
+        // GetUserPhoto
+        public const string GetUserPhoto = "GetUserPhoto";
+        public const string GetUserPhotoResponse = "GetUserPhotoResponse";
+        public const string GetUserPhotoResponseMessage = "GetUserPhotoResponseMessage";
 
         // GetAttachment
         public const string GetAttachment = "GetAttachment";
@@ -1395,6 +1629,13 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string GetEncryptionConfigurationResponse = "GetEncryptionConfigurationResponse";
         public const string SetEncryptionConfigurationResponse = "SetEncryptionConfigurationResponse";
 
+        // GetOMEConfiguration/SetOMEConfiguration
+        public const string GetOMEConfigurationRequest = "GetOMEConfiguration";
+        public const string SetOMEConfigurationRequest = "SetOMEConfiguration";
+        public const string OMEConfigurationXml = "Xml";
+        public const string GetOMEConfigurationResponse = "GetOMEConfigurationResponse";
+        public const string SetOMEConfigurationResponse = "SetOMEConfigurationResponse";
+
         // InstallApp
         public const string InstallAppRequest = "InstallApp";
         public const string InstallAppResponse = "InstallAppResponse";
@@ -1406,6 +1647,10 @@ namespace Microsoft.Exchange.WebServices.Data
         // DisableApp
         public const string DisableAppRequest = "DisableApp";
         public const string DisableAppResponse = "DisableAppResponse";
+
+        // RegisterConsent
+        public const string RegisterConsentRequest = "RegisterConsent";
+        public const string RegisterConsentResponse = "RegisterConsentResponse";
 
         // GetAppMarketplaceUrl
         public const string GetAppMarketplaceUrlRequest = "GetAppMarketplaceUrl";
@@ -1426,6 +1671,46 @@ namespace Microsoft.Exchange.WebServices.Data
         public const string OptedInto = "OptedInto";
         public const string IsArchive = "IsArchive";
 
+        #endregion
+
+        #region Groups
+
+        // Like
+        public const string Likers = "Likers";
+
+        // GetUserUnifiedGroups
+        public const string GetUserUnifiedGroups = "GetUserUnifiedGroups";
+        public const string RequestedGroupsSets = "RequestedGroupsSets";
+        public const string RequestedUnifiedGroupsSetItem = "RequestedUnifiedGroupsSet";
+        public const string SortType = "SortType";
+        public const string FilterType = "FilterType";
+        public const string SortDirection = "SortDirection";
+        public const string GroupsLimit = "GroupsLimit";
+        public const string UserSmtpAddress = "UserSmtpAddress";
+
+        public const string GetUserUnifiedGroupsResponseMessage = "GetUserUnifiedGroupsResponseMessage";
+        public const string GroupsSets = "GroupsSets";
+        public const string UnifiedGroupsSet = "UnifiedGroupsSet";
+        public const string TotalGroups = "TotalGroups";
+        public const string GroupsTag = "Groups";
+        public const string UnifiedGroup = "UnifiedGroup";
+        public const string MailboxGuid = "MailboxGuid";
+        public const string LastVisitedTimeUtc = "LastVisitedTimeUtc";
+        public const string AccessType = "AccessType";
+        public const string ExternalDirectoryObjectId = "ExternalDirectoryObjectId";
+
+        // GetUnifiedGroupUnseenCount
+        public const string GetUnifiedGroupUnseenCount = "GetUnifiedGroupUnseenCount";
+        public const string GroupIdentity = "GroupIdentity";
+        public const string GroupIdentityType = "IdentityType";
+        public const string GroupIdentityValue = "Value";
+
+        public const string GetUnifiedGroupUnseenCountResponseMessage = "GetUnifiedGroupUnseenCountResponseMessage";
+        public const string UnseenCount = "UnseenCount";
+
+        // SetUnifiedGroupLastVisitedTimeRequest
+        public const string SetUnifiedGroupLastVisitedTime = "SetUnifiedGroupLastVisitedTime";
+        public const string SetUnifiedGroupLastVisitedTimeResponseMessage = "SetUnifiedGroupLastVisitedTimeResponseMessage";
         #endregion
 
         #region SOAP element names

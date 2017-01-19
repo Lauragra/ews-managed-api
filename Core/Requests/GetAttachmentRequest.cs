@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="GetAttachmentRequest.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the GetAttachmentRequest class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -16,7 +31,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// <summary>
     /// Represents a GetAttachment request.
     /// </summary>
-    internal sealed class GetAttachmentRequest : MultiResponseServiceRequest<GetAttachmentResponse>, IJsonSerializable
+    internal sealed class GetAttachmentRequest : MultiResponseServiceRequest<GetAttachmentResponse>
     {
         private List<Attachment> attachments = new List<Attachment>();
         private List<string> attachmentIds = new List<string>();
@@ -148,51 +163,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Creates a JSON representation of this object.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        object IJsonSerializable.ToJson(ExchangeService service)
-        {
-            JsonObject jsonRequest = new JsonObject();
-
-            if (this.BodyType.HasValue || this.AdditionalProperties.Count > 0)
-            {
-                JsonObject jsonAttachmentShape = new JsonObject();
-
-                if (this.BodyType.HasValue)
-                {
-                    jsonAttachmentShape.Add(XmlElementNames.BodyType, this.BodyType.Value);
-                }
-
-                if (this.AdditionalProperties.Count > 0)
-                {
-                    PropertySet.WriteAdditionalPropertiesToJson(jsonAttachmentShape, service, this.AdditionalProperties);
-                }
-
-                jsonRequest.Add(XmlElementNames.AttachmentShape, jsonAttachmentShape);
-            }
-
-            List<object> attachmentIds = new List<object>();
-
-            foreach (Attachment attachment in this.Attachments)
-            {
-                this.AddJsonAttachmentIdToList(attachmentIds, attachment.Id);
-            }
-
-            foreach (string attachmentId in this.AttachmentIds)
-            {
-                this.AddJsonAttachmentIdToList(attachmentIds, attachmentId);
-            }
-
-            jsonRequest.Add(XmlElementNames.AttachmentIds, attachmentIds.ToArray());
-
-            return jsonRequest;
-        }
-
-        /// <summary>
         /// Gets the request version.
         /// </summary>
         /// <returns>Earliest Exchange version in which this request is supported.</returns>
@@ -264,18 +234,6 @@ namespace Microsoft.Exchange.WebServices.Data
             writer.WriteStartElement(XmlNamespace.Types, XmlElementNames.AttachmentId);
             writer.WriteAttributeValue(XmlAttributeNames.Id, attachmentId);
             writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Add json attachment id to list
-        /// </summary>
-        /// <param name="attachmentIds">The attachment id object list.</param>
-        /// <param name="attachmentId">The attachment id.</param>
-        private void AddJsonAttachmentIdToList(List<object> attachmentIds, string attachmentId)
-        {
-            JsonObject jsonAttachmentId = new JsonObject();
-            jsonAttachmentId.Add(XmlAttributeNames.Id, attachmentId);
-            attachmentIds.Add(jsonAttachmentId);
         }
     }
 }

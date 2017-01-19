@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="AutodiscoverService.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ExchangeService class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Autodiscover
 {
@@ -438,7 +453,7 @@ namespace Microsoft.Exchange.WebServices.Autodiscover
             }
 
             // Assume caller is not inside the Intranet, regardless of whether SCP Urls 
-            // were returned or not. SCP Urls are only relevent if one of them returns
+            // were returned or not. SCP Urls are only relevant if one of them returns
             // valid Autodiscover settings.
             this.isExternal = true;
 
@@ -524,7 +539,7 @@ namespace Microsoft.Exchange.WebServices.Autodiscover
                             EwsUtilities.Assert(
                                 false,
                                 "Autodiscover.GetConfigurationSettings",
-                                "An unexpected error has occured. This code path should never be reached.");
+                                "An unexpected error has occurred. This code path should never be reached.");
                             break;
                     }
                 }
@@ -694,7 +709,7 @@ namespace Microsoft.Exchange.WebServices.Autodiscover
                                 this.DisableScpLookupIfDuplicateRedirection(settings.RedirectTarget, redirectionEmailAddresses);
 
                                 settings = this.InternalGetLegacyUserSettings<TSettings>(
-                                    emailAddress,
+                                    settings.RedirectTarget,
                                     redirectionEmailAddresses,
                                     ref currentHop);
                                 return true;

@@ -1,8 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="GetClientAccessTokenRequest.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -13,7 +32,7 @@ namespace Microsoft.Exchange.WebServices.Data
     /// <summary>
     /// Represents a GetClientAccessToken request.
     /// </summary>
-    internal sealed class GetClientAccessTokenRequest : MultiResponseServiceRequest<GetClientAccessTokenResponse>, IJsonSerializable
+    internal sealed class GetClientAccessTokenRequest : MultiResponseServiceRequest<GetClientAccessTokenResponse>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GetClientAccessTokenRequest"/> class.
@@ -96,36 +115,6 @@ namespace Microsoft.Exchange.WebServices.Data
             }
 
             writer.WriteEndElement();
-        }
-
-        /// <summary>
-        /// Creates a JSON representation of this object.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns>
-        /// A Json value (either a JsonObject, an array of Json values, or a Json primitive)
-        /// </returns>
-        object IJsonSerializable.ToJson(ExchangeService service)
-        {
-            List<object> jsonArray = new List<object>();
-
-            foreach (ClientAccessTokenRequest tokenRequestInfo in this.TokenRequests)
-            {
-                JsonObject innerRequest = new JsonObject();
-                innerRequest.AddTypeParameter(XmlElementNames.TokenRequest);
-                innerRequest.Add(XmlElementNames.Id, tokenRequestInfo.Id);
-                innerRequest.Add(XmlElementNames.TokenType, tokenRequestInfo.TokenType);
-                if (!string.IsNullOrEmpty(tokenRequestInfo.Scope))
-                {
-                    innerRequest.Add(XmlElementNames.HighlightTermScope, tokenRequestInfo.Scope);
-                }
-
-                jsonArray.Add(innerRequest);
-            }
-
-            JsonObject jsonRequest = new JsonObject();
-            jsonRequest.Add(XmlElementNames.TokenRequests, jsonArray.ToArray());
-            return jsonRequest;
         }
 
         /// <summary>

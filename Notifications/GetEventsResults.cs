@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="GetEventsResults.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the GetEventsResults class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -132,72 +147,6 @@ namespace Microsoft.Exchange.WebServices.Data
                 }
             }
             while (!reader.IsEndElement(XmlNamespace.Messages, XmlElementNames.Notification));
-        }
-
-        /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="eventsResponse">The events response.</param>
-        /// <param name="service">The service.</param>
-        internal void LoadFromJson(JsonObject eventsResponse, ExchangeService service)
-        {
-            foreach (string key in eventsResponse.Keys)
-            {
-                switch (key)
-                {
-                    case XmlElementNames.SubscriptionId:
-                        this.subscriptionId = eventsResponse.ReadAsString(key);
-                        break;
-                    case XmlElementNames.PreviousWatermark:
-                        this.previousWatermark = eventsResponse.ReadAsString(key);
-                        break;
-                    case XmlElementNames.MoreEvents:
-                        this.moreEventsAvailable = eventsResponse.ReadAsBool(key);
-                        break;
-                    case JsonNames.Events:
-                        this.LoadEventsFromJson(eventsResponse.ReadAsArray(key), service);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Loads the events from json.
-        /// </summary>
-        /// <param name="jsonEventsArray">The json events array.</param>
-        /// <param name="service">The service.</param>
-        private void LoadEventsFromJson(object[] jsonEventsArray, ExchangeService service)
-        {
-            foreach (JsonObject jsonEvent in jsonEventsArray)
-            {
-                this.newWatermark = jsonEvent.ReadAsString(XmlElementNames.Watermark);
-                EventType eventType = jsonEvent.ReadEnumValue<EventType>(JsonNames.NotificationType);
-
-                if (eventType == EventType.Status)
-                {
-                    continue;
-                }
-                
-                NotificationEvent notificationEvent;
-                if (jsonEvent.ContainsKey(XmlElementNames.FolderId))
-                {
-                    notificationEvent = new FolderEvent(
-                        eventType,
-                        service.ConvertUniversalDateTimeStringToLocalDateTime(jsonEvent.ReadAsString(XmlElementNames.TimeStamp)).Value);
-                }
-                else
-                {
-                    notificationEvent = new ItemEvent(
-                        eventType,
-                        service.ConvertUniversalDateTimeStringToLocalDateTime(jsonEvent.ReadAsString(XmlElementNames.TimeStamp)).Value);
-                }
-
-                notificationEvent.LoadFromJson(jsonEvent, service);
-
-                this.events.Add(notificationEvent);
-            }
         }
 
         /// <summary>

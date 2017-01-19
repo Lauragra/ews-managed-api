@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="SearchFilter.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the SearchFilter class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -44,24 +59,6 @@ namespace Microsoft.Exchange.WebServices.Data
             if (searchFilter != null)
             {
                 searchFilter.LoadFromXml(reader, reader.LocalName);
-            }
-
-            return searchFilter;
-        }
-
-        /// <summary>
-        /// Loads from json.
-        /// </summary>
-        /// <param name="jsonObject">The json object.</param>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        internal static SearchFilter LoadSearchFilterFromJson(JsonObject jsonObject, ExchangeService service)
-        {
-            SearchFilter searchFilter = GetSearchFilterInstance(jsonObject.ReadTypeString());
-
-            if (searchFilter != null)
-            {
-                searchFilter.LoadFromJson(jsonObject, service);
             }
 
             return searchFilter;
@@ -125,14 +122,6 @@ namespace Microsoft.Exchange.WebServices.Data
         /// </summary>
         /// <returns>XML element name.</returns>
         internal abstract string GetXmlElementName();
-
-        internal override object InternalToJson(ExchangeService service)
-        {
-            JsonObject jsonFilter = new JsonObject();
-            jsonFilter.AddTypeParameter(this.GetXmlElementName());
-
-            return jsonFilter;
-        }
 
         /// <summary>
         /// Writes to XML.

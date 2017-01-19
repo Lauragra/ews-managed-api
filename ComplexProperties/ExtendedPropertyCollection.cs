@@ -1,12 +1,27 @@
-// ---------------------------------------------------------------------------
-// <copyright file="ExtendedPropertyCollection.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// ---------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------
-// <summary>Defines the ExtendedPropertyCollection class.</summary>
-//-----------------------------------------------------------------------
+/*
+ * Exchange Web Services Managed API
+ *
+ * Copyright (c) Microsoft Corporation
+ * All rights reserved.
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this
+ * software and associated documentation files (the "Software"), to deal in the Software
+ * without restriction, including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+ * to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED *AS IS*, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+ * PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+ * FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
 namespace Microsoft.Exchange.WebServices.Data
 {
@@ -26,15 +41,6 @@ namespace Microsoft.Exchange.WebServices.Data
         /// <param name="xmlElementName">Name of the XML element.</param>
         /// <returns>Complex property instance.</returns>
         internal override ExtendedProperty CreateComplexProperty(string xmlElementName)
-        {
-            return new ExtendedProperty();
-        }
-
-        /// <summary>
-        /// Creates the default complex property.
-        /// </summary>
-        /// <returns></returns>
-        internal override ExtendedProperty CreateDefaultComplexProperty()
         {
             return new ExtendedProperty();
         }
@@ -74,23 +80,6 @@ namespace Microsoft.Exchange.WebServices.Data
             {
                 extendedProperty.WriteToXml(writer, XmlElementNames.ExtendedProperty);
             }
-        }
-
-        /// <summary>
-        /// Internals to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <returns></returns>
-        internal override object InternalToJson(ExchangeService service)
-        {
-            List<object> values = new List<object>();
-
-            foreach (ExtendedProperty extendedProperty in this)
-            {
-                values.Add(extendedProperty.InternalToJson(service));
-            }
-
-            return values.ToArray();
         }
 
         /// <summary>
@@ -228,42 +217,6 @@ namespace Microsoft.Exchange.WebServices.Data
         }
 
         /// <summary>
-        /// Writes the set update to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="propertyDefinition">The property definition.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns></returns>
-        bool ICustomUpdateSerializer.WriteSetUpdateToJson(
-             ExchangeService service,
-             ServiceObject ewsObject,
-             PropertyDefinition propertyDefinition,
-             List<JsonObject> updates)
-        {
-            List<ExtendedProperty> propertiesToSet = new List<ExtendedProperty>();
-
-            propertiesToSet.AddRange(this.AddedItems);
-            propertiesToSet.AddRange(this.ModifiedItems);
-
-            foreach (ExtendedProperty extendedProperty in propertiesToSet)
-            {
-                updates.Add(
-                    PropertyBag.CreateJsonSetUpdate(
-                    extendedProperty,
-                    service,
-                    ewsObject));
-            }
-
-            foreach (ExtendedProperty extendedProperty in this.RemovedItems)
-            {
-                updates.Add(PropertyBag.CreateJsonDeleteUpdate(extendedProperty.PropertyDefinition, service, ewsObject));
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Writes the deletion update to XML.
         /// </summary>
         /// <param name="writer">The writer.</param>
@@ -278,23 +231,6 @@ namespace Microsoft.Exchange.WebServices.Data
                 writer.WriteStartElement(XmlNamespace.Types, ewsObject.GetDeleteFieldXmlElementName());
                 extendedProperty.PropertyDefinition.WriteToXml(writer);
                 writer.WriteEndElement();
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Writes the delete update to json.
-        /// </summary>
-        /// <param name="service">The service.</param>
-        /// <param name="ewsObject">The ews object.</param>
-        /// <param name="updates">The updates.</param>
-        /// <returns></returns>
-        bool ICustomUpdateSerializer.WriteDeleteUpdateToJson(ExchangeService service, ServiceObject ewsObject, List<JsonObject> updates)
-        {
-            foreach (ExtendedProperty extendedProperty in this.Items)
-            {
-                updates.Add(PropertyBag.CreateJsonDeleteUpdate(extendedProperty.PropertyDefinition, service, ewsObject));
             }
 
             return true;

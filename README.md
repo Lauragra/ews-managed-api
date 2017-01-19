@@ -1,12 +1,12 @@
 # Getting Started with the EWS Managed API
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/OfficeDev/ews-managed-api?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The Exchange Web Services (EWS) Managed API provides a managed interface for developing .NET client applications that use EWS.
 By using the EWS Managed API, you can access almost all the information stored in an Office 365, Exchange Online, or Exchange Server mailbox.
 
 ## Download options
 
-The EWS Managed API is available as an open-source project on GitHub, or as a Microsoft Windows Installer on the [Microsoft Download Center](http://go.microsoft.com/fwlink/?LinkID=255472). 
-The project available on GitHub is based on the EWS Managed API 2.2, and includes any updates made since the release of that version. 
+Download EWS Managed API via [nuget](http://www.nuget.org/packages/Microsoft.Exchange.WebServices/).
 
 ## Getting started resources
 
